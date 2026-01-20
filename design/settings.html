@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Job OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-white text-zinc-950 antialiased font-sans h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-zinc-200 bg-zinc-50/50 flex flex-col flex-shrink-0">
+        <div class="h-14 flex items-center px-4 border-b border-zinc-200 bg-white">
+            <div class="flex items-center gap-2 font-semibold text-zinc-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="text-zinc-900">
+                    <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                    <rect width="20" height="14" x="2" y="6" rx="2" />
+                </svg>
+                Job OS
+            </div>
+        </div>
+        <nav class="flex-1 p-4 space-y-1">
+            <a href="job_tracker.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <line x1="9" y1="21" x2="9" y2="9" />
+                </svg>
+                Job Tracker
+            </a>
+            <a href="profile.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Profiles
+            </a>
+            <a href="settings.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-zinc-900 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                    <circle cx="12" cy="12" r="3" />
+                </svg>
+                Settings
+            </a>
+        </nav>
+        <div class="p-4 border-t border-zinc-200">
+            <div class="bg-blue-50 text-blue-800 text-xs p-3 rounded-md border border-blue-100">
+                <p class="font-medium mb-1">Local Mode</p>
+                <p class="opacity-80">Data stored in IndexedDB.</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col bg-white min-w-0">
+        <header class="h-14 flex items-center justify-between px-6 border-b border-zinc-200 bg-white">
+            <h1 class="text-lg font-semibold text-zinc-900">Settings</h1>
+        </header>
+
+        <div class="flex-1 overflow-auto bg-zinc-50/30 p-6">
+            <div class="max-w-2xl space-y-8">
+
+                <!-- AI Configuration -->
+                <section class="bg-white rounded-lg border border-zinc-200 shadow-sm p-6">
+                    <div class="flex items-start gap-4">
+                        <div class="p-2 bg-purple-100 rounded-md text-purple-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                                <line x1="12" x2="12" y1="19" y2="22" />
+                            </svg>
+                        </div>
+                        <div class="flex-1 space-y-4">
+                            <div>
+                                <h2 class="text-base font-semibold text-zinc-900">AI Configuration</h2>
+                                <p class="text-sm text-zinc-500 mt-1">Configure OpenRouter to power resume generation.
+                                </p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-zinc-900">OpenRouter API Key</label>
+                                <div class="flex gap-2">
+                                    <input type="password" value="sk-or-v1-........................................"
+                                        class="flex-1 h-9 rounded-md border border-zinc-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-950 font-mono text-zinc-500"
+                                        readonly>
+                                    <button
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 border border-zinc-200 bg-white shadow-sm hover:bg-zinc-100 h-9 px-3">
+                                        Edit
+                                    </button>
+                                </div>
+                                <p class="text-xs text-zinc-500">Your key is stored locally in your browser and never
+                                    sent to our servers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Appearance -->
+                <section class="bg-white rounded-lg border border-zinc-200 shadow-sm p-6">
+                    <div class="flex items-start gap-4">
+                        <div class="p-2 bg-zinc-100 rounded-md text-zinc-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="4" />
+                                <path d="M12 2v2" />
+                                <path d="M12 20v2" />
+                                <path d="m4.93 4.93 1.41 1.41" />
+                                <path d="m17.66 17.66 1.41 1.41" />
+                                <path d="M2 12h2" />
+                                <path d="M20 12h2" />
+                                <path d="m6.34 17.66-1.41 1.41" />
+                                <path d="m19.07 4.93-1.41 1.41" />
+                            </svg>
+                        </div>
+                        <div class="flex-1 space-y-4">
+                            <div>
+                                <h2 class="text-base font-semibold text-zinc-900">Appearance</h2>
+                                <p class="text-sm text-zinc-500 mt-1">Customize how Job OS looks on your device.</p>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <label class="text-sm font-medium text-zinc-900">Theme</label>
+                                <div class="flex items-center p-1 bg-zinc-100 rounded-lg">
+                                    <button
+                                        class="px-3 py-1.5 text-xs font-medium bg-white rounded-md shadow-sm text-zinc-900">Light</button>
+                                    <button
+                                        class="px-3 py-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900">Dark</button>
+                                    <button
+                                        class="px-3 py-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900">System</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Management -->
+                <section class="bg-white rounded-lg border border-zinc-200 shadow-sm p-6">
+                    <div class="flex items-start gap-4">
+                        <div class="p-2 bg-blue-50 rounded-md text-blue-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" x2="12" y1="15" y2="3" />
+                            </svg>
+                        </div>
+                        <div class="flex-1 space-y-4">
+                            <div>
+                                <h2 class="text-base font-semibold text-zinc-900">Data Management</h2>
+                                <p class="text-sm text-zinc-500 mt-1">Export your data for backup or portability.</p>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-2">
+                                <div>
+                                    <p class="text-sm font-medium text-zinc-900">Export All Data</p>
+                                    <p class="text-xs text-zinc-500">Download a JSON file containing all jobs and
+                                        profiles.</p>
+                                </div>
+                                <button
+                                    class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 border border-zinc-200 bg-white shadow-sm hover:bg-zinc-100 h-9 px-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" class="mr-2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="7 10 12 15 17 10" />
+                                        <line x1="12" x2="12" y1="15" y2="3" />
+                                    </svg>
+                                    Export JSON
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Danger Zone -->
+                <section class="bg-white rounded-lg border border-red-100 shadow-sm p-6">
+                    <div class="flex items-start gap-4">
+                        <div class="p-2 bg-red-50 rounded-md text-red-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                <line x1="10" x2="10" y1="11" y2="17" />
+                                <line x1="14" x2="14" y1="11" y2="17" />
+                            </svg>
+                        </div>
+                        <div class="flex-1 space-y-4">
+                            <div>
+                                <h2 class="text-base font-semibold text-zinc-900">Danger Zone</h2>
+                                <p class="text-sm text-zinc-500 mt-1">Manage your local data.</p>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-2">
+                                <div>
+                                    <p class="text-sm font-medium text-zinc-900">Clear all data</p>
+                                    <p class="text-xs text-zinc-500">Permanently remove all jobs and profiles from this
+                                        browser.</p>
+                                </div>
+                                <button
+                                    class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-500 border border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50 h-9 px-3">
+                                    Delete Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="text-center pt-8 text-xs text-zinc-400">
+                    <p>Job OS v1.0.0</p>
+                    <p class="mt-1">Open Source • MIT License</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

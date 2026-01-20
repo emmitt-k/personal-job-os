@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Tracker - Job OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-white text-zinc-950 antialiased font-sans h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-zinc-200 bg-zinc-50/50 flex flex-col">
+        <div class="h-14 flex items-center px-4 border-b border-zinc-200 bg-white">
+            <div class="flex items-center gap-2 font-semibold text-zinc-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="text-zinc-900">
+                    <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                    <rect width="20" height="14" x="2" y="6" rx="2" />
+                </svg>
+                Job OS
+            </div>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-1">
+            <a href="job_tracker.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-zinc-900 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <line x1="9" y1="21" x2="9" y2="9" />
+                </svg>
+                Job Tracker
+            </a>
+            <a href="profile.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Profiles
+            </a>
+            <a href="settings.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                    <circle cx="12" cy="12" r="3" />
+                </svg>
+                Settings
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-zinc-200">
+            <div class="bg-blue-50 text-blue-800 text-xs p-3 rounded-md border border-blue-100">
+                <p class="font-medium mb-1">Local Mode</p>
+                <p class="opacity-80">Data stored in IndexedDB.</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col bg-white min-w-0">
+        <!-- Header / Toolbar -->
+        <header class="h-14 flex items-center justify-between px-6 border-b border-zinc-200 bg-white">
+            <div class="flex items-center gap-4">
+                <input type="text" placeholder="Search company, role, or profile..."
+                    class="h-9 w-full rounded-md border border-zinc-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 placeholder:text-zinc-500">
+                </input>
+                <div class="flex items-center gap-1 border-l border-zinc-200 pl-4">
+                    <button
+                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-zinc-100 hover:text-zinc-900 h-8 px-2 text-zinc-500">
+                        <span class="mr-2 text-xs font-medium">Status: All</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m6 9 6 6 6-6" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex items-center gap-1 border-l border-zinc-200 pl-4">
+                    <button
+                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-zinc-100 hover:text-zinc-900 h-8 px-2 text-zinc-500">
+                        <span class="mr-2 text-xs font-medium">Applied: Any Time</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m6 9 6 6 6-6" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <button
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-9 px-4 shadow-sm"
+                onclick="document.getElementById('add-job-modal').classList.remove('hidden')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                    <path d="M5 12h14" />
+                    <path d="M12 5v14" />
+                </svg>
+                Add Job
+            </button>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-auto p-6 bg-zinc-50/30">
+
+            <div class="rounded-lg border border-zinc-200 bg-white shadow-sm overflow-hidden">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs text-zinc-500 uppercase bg-zinc-50/50 border-b border-zinc-200">
+                        <tr>
+                            <th class="px-4 py-3 font-medium cursor-pointer hover:text-zinc-700 group/th">
+                                <div class="flex items-center gap-1">
+                                    Company
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="text-zinc-400 opacity-0 group-hover/th:opacity-100 transition-opacity">
+                                        <path d="m7 15 5 5 5-5" />
+                                        <path d="m7 9 5-5 5 5" />
+                                    </svg>
+                                </div>
+                            </th>
+                            <th class="px-4 py-3 font-medium cursor-pointer hover:text-zinc-700 group/th">
+                                <div class="flex items-center gap-1">
+                                    Role
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="text-zinc-400 opacity-0 group-hover/th:opacity-100 transition-opacity">
+                                        <path d="m7 15 5 5 5-5" />
+                                        <path d="m7 9 5-5 5 5" />
+                                    </svg>
+                                </div>
+                            </th>
+                            <th class="px-4 py-3 font-medium cursor-pointer hover:text-zinc-700 group/th">
+                                <div class="flex items-center gap-1">
+                                    Status
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="text-zinc-400 opacity-0 group-hover/th:opacity-100 transition-opacity">
+                                        <path d="m7 15 5 5 5-5" />
+                                        <path d="m7 9 5-5 5 5" />
+                                    </svg>
+                                </div>
+                            </th>
+                            <th class="px-4 py-3 font-medium cursor-pointer hover:text-zinc-700 group/th">
+                                <div class="flex items-center gap-1">
+                                    Applied
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="text-zinc-400 opacity-0 group-hover/th:opacity-100 transition-opacity">
+                                        <path d="m7 15 5 5 5-5" />
+                                        <path d="m7 9 5-5 5 5" />
+                                    </svg>
+                                </div>
+                            </th>
+                            <th class="px-4 py-3 font-medium">Profile</th>
+                            <th class="px-4 py-3 font-medium text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100">
+                        <!-- Row 1 -->
+                        <tr class="hover:bg-zinc-50/50 transition-colors group">
+                            <td class="px-4 py-3 font-medium text-zinc-900">Acme Corp</td>
+                            <td class="px-4 py-3 text-zinc-600">Senior Frontend Engineer</td>
+                            <td class="px-4 py-3">
+                                <select
+                                    class="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-0.5 rounded-full border-none focus:ring-0 cursor-pointer appearance-none text-center min-w-[80px]">
+                                    <option value="Interview" selected>INTERVIEW</option>
+                                    <option value="Saved">SAVED</option>
+                                    <option value="Applied">APPLIED</option>
+                                    <option value="Offer">OFFER</option>
+                                    <option value="Rejected">REJECTED</option>
+                                </select>
+                            </td>
+                            <td class="px-4 py-3 text-zinc-500 font-mono text-xs">2024-01-15</td>
+                            <td class="px-4 py-3 text-zinc-500">Full Stack V2</td>
+                            <td class="px-4 py-3 text-right">
+                                <div
+                                    class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-zinc-100 hover:text-zinc-900 h-8 w-8 p-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" class="text-zinc-500">
+                                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                            <path d="m15 5 4 4" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-red-50 hover:text-red-900 h-8 w-8 p-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" class="text-red-500">
+                                            <path d="M3 6h18" />
+                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                            <line x1="10" x2="10" y1="11" y2="17" />
+                                            <line x1="14" x2="14" y1="11" y2="17" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Row 2 -->
+                        <tr class="hover:bg-zinc-50/50 transition-colors group">
+                            <td class="px-4 py-3 font-medium text-zinc-900">Globex Inc</td>
+                            <td class="px-4 py-3 text-zinc-600">Product Designer</td>
+                            <td class="px-4 py-3">
+                                <select
+                                    class="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded-full border-none focus:ring-0 cursor-pointer appearance-none text-center min-w-[80px]">
+                                    <option value="Offer" selected>OFFER</option>
+                                    <option value="Saved">SAVED</option>
+                                    <option value="Applied">APPLIED</option>
+                                    <option value="Interview">INTERVIEW</option>
+                                    <option value="Rejected">REJECTED</option>
+                                </select>
+                            </td>
+                            <td class="px-4 py-3 text-zinc-500 font-mono text-xs">2024-01-12</td>
+                            <td class="px-4 py-3 text-zinc-500">Design Lead</td>
+                            <td class="px-4 py-3 text-right">
+                                <div
+                                    class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-zinc-100 hover:text-zinc-900 h-8 w-8 p-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" class="text-zinc-500">
+                                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                            <path d="m15 5 4 4" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-red-50 hover:text-red-900 h-8 w-8 p-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" class="text-red-500">
+                                            <path d="M3 6h18" />
+                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                            <line x1="10" x2="10" y1="11" y2="17" />
+                                            <line x1="14" x2="14" y1="11" y2="17" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Row 3 -->
+                        <tr class="hover:bg-zinc-50/50 transition-colors group">
+                            <td class="px-4 py-3 font-medium text-zinc-900">Soylent Corp</td>
+                            <td class="px-4 py-3 text-zinc-600">Backend Developer</td>
+                            <td class="px-4 py-3">
+                                <select
+                                    class="bg-zinc-100 text-zinc-800 text-[10px] font-bold px-2 py-0.5 rounded-full border-none focus:ring-0 cursor-pointer appearance-none text-center min-w-[80px]">
+                                    <option value="Saved" selected>SAVED</option>
+                                    <option value="Applied">APPLIED</option>
+                                    <option value="Interview">INTERVIEW</option>
+                                    <option value="Offer">OFFER</option>
+                                    <option value="Rejected">REJECTED</option>
+                                </select>
+                            </td>
+                            <td class="px-4 py-3 text-zinc-500 font-mono text-xs">-</td>
+                            <td class="px-4 py-3 text-zinc-500">Backend Focus</td>
+                            <td class="px-4 py-3 text-right">
+                                <div
+                                    class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-zinc-100 hover:text-zinc-900 h-8 w-8 p-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" class="text-zinc-500">
+                                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                            <path d="m15 5 4 4" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-red-50 hover:text-red-900 h-8 w-8 p-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" class="text-red-500">
+                                            <path d="M3 6h18" />
+                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                            <line x1="10" x2="10" y1="11" y2="17" />
+                                            <line x1="14" x2="14" y1="11" y2="17" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Row 4 -->
+                        <tr class="hover:bg-zinc-50/50 transition-colors group">
+                            <td class="px-4 py-3 font-medium text-zinc-900">Massive Dynamic</td>
+                            <td class="px-4 py-3 text-zinc-600">Systems Architect</td>
+                            <td class="px-4 py-3">
+                                <select
+                                    class="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded-full border-none focus:ring-0 cursor-pointer appearance-none text-center min-w-[80px]">
+                                    <option value="Rejected" selected>REJECTED</option>
+                                    <option value="Saved">SAVED</option>
+                                    <option value="Applied">APPLIED</option>
+                                    <option value="Interview">INTERVIEW</option>
+                                    <option value="Offer">OFFER</option>
+                                </select>
+                            </td>
+                            <td class="px-4 py-3 text-zinc-500 font-mono text-xs">2024-01-08</td>
+                            <td class="px-4 py-3 text-zinc-500">Architect V1</td>
+                            <td class="px-4 py-3 text-right">
+                                <div
+                                    class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-zinc-100 hover:text-zinc-900 h-8 w-8 p-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" class="text-zinc-500">
+                                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                            <path d="m15 5 4 4" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-red-50 hover:text-red-900 h-8 w-8 p-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" class="text-red-500">
+                                            <path d="M3 6h18" />
+                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                            <line x1="10" x2="10" y1="11" y2="17" />
+                                            <line x1="14" x2="14" y1="11" y2="17" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal Mockup -->
+    <div id="add-job-modal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/20 backdrop-blur-sm p-4 sm:p-6">
+        <div class="fixed inset-0" onclick="document.getElementById('add-job-modal').classList.add('hidden')"></div>
+        <div
+            class="relative w-full max-w-5xl bg-white rounded-xl shadow-2xl border border-zinc-200 flex flex-col max-h-[90vh]">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-200">
+                <div>
+                    <h2 class="text-lg font-semibold text-zinc-900">Add New Job</h2>
+                    <p class="text-sm text-zinc-500">Track a new job and generate a tailored resume.</p>
+                </div>
+                <!-- Fix: Added type='button' and standard classes -->
+                <button type="button"
+                    class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-zinc-100 hover:text-zinc-900 h-8 w-8 p-0 text-zinc-500"
+                    onclick="document.getElementById('add-job-modal').classList.add('hidden')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 18 18" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Content (2 Columns) -->
+            <div class="flex-1 grid grid-cols-2 divide-x divide-zinc-200 overflow-hidden">
+                <!-- Left: Job Details -->
+                <div class="p-6 overflow-y-auto space-y-6">
+                    <div class="space-y-4">
+                        <h3 class="text-xs font-semibold uppercase text-zinc-500 tracking-wider">Job Details</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label
+                                    class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Company</label>
+                                <input type="text"
+                                    class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
+                                    placeholder="e.g. Acme Corp">
+                            </div>
+                            <div class="space-y-2">
+                                <label
+                                    class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Role
+                                    Title</label>
+                                <input type="text"
+                                    class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
+                                    placeholder="e.g. Frontend Engineer">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label
+                                    class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Status</label>
+                                <select
+                                    class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950">
+                                    <option>Saved</option>
+                                    <option>Applied</option>
+                                    <option>Interview</option>
+                                    <option>Offer</option>
+                                    <option>Rejected</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label
+                                    class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Source</label>
+                                <input type="text"
+                                    class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950"
+                                    placeholder="e.g. LinkedIn">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-semibold uppercase text-zinc-500 tracking-wider">Job Description
+                            </h3>
+                            <button class="text-xs text-blue-600 hover:underline">Paste via Clipboard</button>
+                        </div>
+                        <textarea
+                            class="flex min-h-[200px] w-full rounded-md border border-zinc-200 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 resize-y font-mono text-xs"
+                            placeholder="Paste the full job description here..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Right: Resume Generation -->
+                <div class="bg-zinc-50/50 flex flex-col h-full overflow-hidden">
+                    <div class="px-4 py-3 border-b border-zinc-200 bg-white/50">
+                        <!-- Mode Selector (Tabs) -->
+                        <div class="flex p-1 bg-zinc-100 rounded-lg mb-4">
+                            <button type="button"
+                                onclick="document.getElementById('gen-mode-generate').classList.remove('hidden'); document.getElementById('gen-mode-refine').classList.add('hidden'); this.classList.add('bg-white', 'shadow-sm'); this.nextElementSibling.classList.remove('bg-white', 'shadow-sm')"
+                                class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all bg-white shadow-sm">
+                                New Draft
+                            </button>
+                            <button type="button"
+                                onclick="document.getElementById('gen-mode-generate').classList.add('hidden'); document.getElementById('gen-mode-refine').classList.remove('hidden'); this.classList.add('bg-white', 'shadow-sm'); this.previousElementSibling.classList.remove('bg-white', 'shadow-sm')"
+                                class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all">
+                                Refine AI
+                            </button>
+                        </div>
+
+                        <!-- Mode 1: Generate -->
+                        <div id="gen-mode-generate" class="space-y-4">
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="flex-1 flex items-center gap-2">
+                                    <span class="text-xs font-medium text-zinc-500 whitespace-nowrap">Profile:</span>
+                                    <select
+                                        class="flex-1 h-8 rounded-md border border-zinc-200 bg-white text-sm px-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950">
+                                        <option>Full Stack V2</option>
+                                        <option>Design Lead</option>
+                                        <option>Product Manager</option>
+                                    </select>
+                                </div>
+                                <button type="button"
+                                    class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-8 px-3 text-xs shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" class="mr-2">
+                                        <path d="M5 12h14" />
+                                        <path d="M12 5v14" />
+                                    </svg>
+                                    Generate Draft
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Mode 2: Refine (Hidden by default) -->
+                        <div id="gen-mode-refine" class="hidden space-y-3">
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Verbal
+                                    Instructions (AI)</label>
+                                <div class="flex gap-2">
+                                    <textarea
+                                        class="flex-1 min-h-[60px] rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs shadow-sm placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 resize-none"
+                                        placeholder="e.g. 'Make the summary more punchy', 'Highlight my Python experience more'"></textarea>
+                                    <button type="button"
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 h-auto px-4 text-xs shadow-sm flex-col py-2 gap-1 uppercase tracking-tight">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path
+                                                d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                                            <path d="M5 3v4" />
+                                            <path d="M19 17v4" />
+                                            <path d="M3 5h4" />
+                                            <path d="M17 19h4" />
+                                        </svg>
+                                        Refine
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 p-6 overflow-y-auto">
+                        <div class="space-y-2 mb-4">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-semibold text-zinc-900">Preview</h4>
+                                <div class="flex gap-2">
+                                    <button
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs">Copy
+                                        Text</button>
+                                    <button
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs">Download
+                                        PDF</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resume Preview Paper(s) -->
+                        <div class="space-y-6">
+                            <!-- Page 1 -->
+                            <div
+                                class="bg-white border border-zinc-200 shadow-sm p-8 min-h-[750px] rounded-sm text-[11px] leading-relaxed text-zinc-800 font-serif relative">
+                                <div
+                                    class="absolute -top-2 -right-2 bg-zinc-900 text-white text-[10px] px-2 py-0.5 rounded shadow-sm font-sans font-bold uppercase tracking-widest">
+                                    Page 1</div>
+                                <div class="text-center border-b border-zinc-200 pb-4 mb-4">
+                                    <h1 class="text-lg font-bold uppercase tracking-wide">John Doe</h1>
+                                    <p class="text-zinc-500 mt-1">San Francisco, CA • john.doe@example.com • (555)
+                                        123-4567
+                                    </p>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h2
+                                        class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
+                                        Summary</h2>
+                                    <p>Senior Full Stack Engineer with 8+ years of experience building scalable web
+                                        applications. Expert in React, Node.js, and Cloud Infrastructure. Proven track
+                                        record of reducing load times by 40% and mentoring junior developers.</p>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h2
+                                        class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
+                                        Experience</h2>
+                                    <div class="mb-3">
+                                        <div class="flex justify-between items-baseline mb-1">
+                                            <h3 class="font-bold">Senior Software Engineer</h3>
+                                            <span class="text-zinc-500 italic">2021 - Present</span>
+                                        </div>
+                                        <div class="mb-1 italic text-zinc-600">TechCorp Inc.</div>
+                                        <ul class="list-disc list-outside ml-4 space-y-1">
+                                            <li>Architected and led the migration of a legacy monolith to a
+                                                microservices
+                                                architecture using Go and Kubernetes.</li>
+                                            <li>Optimized database queries decreasing latency by 30% for high-traffic
+                                                endpoints.</li>
+                                            <li>Implemented automated CI/CD pipelines reducing deployment time from 1
+                                                hour
+                                                to 10 minutes.</li>
+                                        </ul>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="flex justify-between items-baseline mb-1">
+                                            <h3 class="font-bold">Software Engineer</h3>
+                                            <span class="text-zinc-500 italic">2018 - 2021</span>
+                                        </div>
+                                        <div class="mb-1 italic text-zinc-600">StartupXY</div>
+                                        <ul class="list-disc list-outside ml-4 space-y-1">
+                                            <li>Developed user-facing features for a fintech dashboard using React and
+                                                Redux.</li>
+                                            <li>Collaborated with design team to implement a new design system,
+                                                improving UI
+                                                consistency.</li>
+                                            <li>Spearheaded the integration of third-party payment gateways.</li>
+                                        </ul>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="flex justify-between items-baseline mb-1">
+                                            <h3 class="font-bold">Junior Developer</h3>
+                                            <span class="text-zinc-500 italic">2016 - 2018</span>
+                                        </div>
+                                        <div class="mb-1 italic text-zinc-600">WebWorks Agency</div>
+                                        <ul class="list-disc list-outside ml-4 space-y-1">
+                                            <li>Maintained and updated client websites built with WordPress and PHP.
+                                            </li>
+                                            <li>Implemented responsive designs ensuring mobile-first compatibility.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Page 2 -->
+                            <div
+                                class="bg-white border border-zinc-200 shadow-sm p-8 min-h-[750px] rounded-sm text-[11px] leading-relaxed text-zinc-800 font-serif relative">
+                                <div
+                                    class="absolute -top-2 -right-2 bg-zinc-900 text-white text-[10px] px-2 py-0.5 rounded shadow-sm font-sans font-bold uppercase tracking-widest">
+                                    Page 2</div>
+                                <div class="mb-6">
+                                    <h2
+                                        class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
+                                        Projects</h2>
+                                    <div class="mb-4">
+                                        <div class="flex justify-between items-baseline mb-1">
+                                            <h3 class="font-bold underline">Open Source UI Kit</h3>
+                                            <span class="text-zinc-500 italic">github.com/jdoe/ui-kit</span>
+                                        </div>
+                                        <p>Created a comprehensive React UI library with 50+ accessible components,
+                                            currently used by 500+ developers.</p>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="flex justify-between items-baseline mb-1">
+                                            <h3 class="font-bold underline"> Job OS</h3>
+                                            <span class="text-zinc-500 italic">github.com/jdoe/job-os</span>
+                                        </div>
+                                        <p>Developed a local-first browser application to track job applications and
+                                            automate resume tailoring using AI.</p>
+                                    </div>
+                                </div>
+
+                                <div class="mb-6">
+                                    <h2
+                                        class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
+                                        Education</h2>
+                                    <div class="mb-2">
+                                        <div class="flex justify-between items-baseline mb-0.5">
+                                            <h3 class="font-bold text-xs">Bachelor of Science in Computer Science</h3>
+                                            <span class="text-zinc-500 italic text-[10px]">2012 - 2016</span>
+                                        </div>
+                                        <div class="text-zinc-600 italic">University of Technology</div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-6">
+                                    <h2
+                                        class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
+                                        Skills</h2>
+                                    <p><span class="font-bold">Languages:</span> JavaScript (ES6+), TypeScript, Python,
+                                        Go, SQL, HTML5, CSS3</p>
+                                    <p class="mt-1"><span class="font-bold">Frameworks/Libraries:</span> React, Next.js,
+                                        Node.js, Express, Tailwind CSS, Shadcn UI</p>
+                                    <p class="mt-1"><span class="font-bold">Tools/Infrastructure:</span> Docker,
+                                        Kubernetes, AWS (S3, EC2, Lambda), Git, CI/CD, Terraform</p>
+                                </div>
+
+                                <div class="mb-6">
+                                    <h2
+                                        class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
+                                        Certifications</h2>
+                                    <p>• AWS Certified Solutions Architect – Associate (2023)</p>
+                                    <p>• Google Cloud Professional Cloud Architect (2022)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-end px-6 py-4 border-t border-zinc-200 bg-zinc-50/50 gap-3">
+                <!-- Fix: Added type='button' and standard classes -->
+                <button type="button"
+                    class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-zinc-100 hover:text-zinc-900 h-9 px-4 py-2"
+                    onclick="document.getElementById('add-job-modal').classList.add('hidden')">Cancel</button>
+                <button type="button"
+                    class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-9 px-4 py-2 shadow"
+                    onclick="document.getElementById('add-job-modal').classList.add('hidden')">Save Application</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
