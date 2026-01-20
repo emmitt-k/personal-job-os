@@ -134,3 +134,135 @@ export async function parseResumeWithAI(resumeText: string): Promise<Profile> {
         throw error;
     }
 }
+
+export async function generateResumeDraft(profile: Profile, jobDetails: { company: string; role: string; description: string }): Promise<string> {
+    const settings = await db.settings.toCollection().first();
+    const apiKey = settings?.openRouterApiKey;
+
+    if (!apiKey) {
+        throw new Error("OpenRouter API Key is missing. Please configure it in Settings.");
+    }
+
+    const systemPrompt = `
+    You are an expert resume writer. Your goal is to tailor a candidate's profile to a specific job description.
+    
+    You will be given:
+    1. The Candidate's Profile (JSON)
+    2. The Job Details (Company, Role, Description)
+    
+    Output:
+    A complete, plain-text resume formatted in Markdown. 
+    - Focus on relevant skills and experience.
+    - Rewrite the summary to align with the job.
+    - Reorder or highlight bullet points that match the job requirements.
+    - Do NOT invent false information, but emphasize truthful relevant details.
+    `;
+
+    const userPrompt = `
+    PROFILE:
+    ${JSON.stringify(profile, null, 2)}
+    
+    JOB DETAILS:
+    Company: ${jobDetails.company}
+    Role: ${jobDetails.role}
+    Description:
+    ${jobDetails.description}
+    `;
+
+    try {
+        const response = await fetch(OPENROUTER_API_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'HTTP-Referer': 'https://jobos.local',
+                'X-Title': 'Personal Job OS',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: MODEL,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                temperature: 0.7 // Slightly higher creativity for writing
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`AI Request Failed: ${errorData.error?.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+        let content = data.choices[0]?.message?.content || "Failed to generate resume.";
+
+        // Strip code blocks if present (e.g. ```markdown ... ```)
+        content = content.replace(/^```markdown\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '');
+
+        return content;
+
+    } catch (error) {
+        console.error("AI Gen Error:", error);
+        throw error;
+    }
+}
+
+export async function refineResume(currentResume: string, instructions: string): Promise<string> {
+    const settings = await db.settings.toCollection().first();
+    const apiKey = settings?.openRouterApiKey;
+
+    if (!apiKey) {
+        throw new Error("OpenRouter API Key is missing.");
+    }
+
+    const systemPrompt = `
+    You are an expert resume editor. You will refine an existing resume draft based on specific user instructions.
+    Return the FULL updated resume text in Markdown. Do not return just the diff.
+    Do NOT include markdown formatted code blocks (e.g. \`\`\`markdown). Just return the content.
+    `;
+
+    const userPrompt = `
+    CURRENT RESUME:
+    ${currentResume}
+    
+    INSTRUCTIONS:
+    ${instructions}
+    `;
+
+    try {
+        const response = await fetch(OPENROUTER_API_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'HTTP-Referer': 'https://jobos.local',
+                'X-Title': 'Personal Job OS',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: MODEL,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                temperature: 0.5
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`AI Request Failed: ${errorData.error?.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+        let content = data.choices[0]?.message?.content || "Failed to refine resume.";
+
+        // Strip code blocks if present
+        content = content.replace(/^```markdown\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '');
+
+        return content;
+
+    } catch (error) {
+        console.error("AI Refine Error:", error);
+        throw error;
+    }
+}

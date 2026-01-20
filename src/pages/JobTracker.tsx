@@ -2,13 +2,18 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db/client';
 import { JobStatus, type Job } from '@/types/job';
-import { Search, Filter, Plus, Pencil, Trash2, ChevronDown, Check, X } from 'lucide-react';
+import { Search, ChevronDown, Plus, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { JobForm } from '@/components/JobForm';
 
-export function JobTracker() {
+export default function JobTracker() {
     const jobs = useLiveQuery(() => db.jobs.toArray());
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<JobStatus | 'All'>('All');
+
+    // Modal State
+    const [isJobModalOpen, setIsJobModalOpen] = useState(false);
+    const [editingJob, setEditingJob] = useState<Job | null>(null);
 
     // Filter logic
     const filteredJobs = jobs?.filter(job => {
@@ -18,6 +23,30 @@ export function JobTracker() {
         const matchesStatus = statusFilter === 'All' || job.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
+
+    const handleCreateJob = () => {
+        setEditingJob(null);
+        setIsJobModalOpen(true);
+    };
+
+    const handleEditJob = (job: Job) => {
+        setEditingJob(job);
+        setIsJobModalOpen(true);
+    };
+
+    const handleSaveJob = async (jobData: Job) => {
+        try {
+            if (jobData.id) {
+                await db.jobs.update(jobData.id, jobData as any);
+            } else {
+                await db.jobs.add({ ...jobData, createdAt: new Date(), updatedAt: new Date() });
+            }
+            setIsJobModalOpen(false);
+        } catch (error) {
+            console.error("Failed to save job:", error);
+            alert("Failed to save job.");
+        }
+    };
 
     const handleDelete = async (id: number) => {
         if (confirm('Are you sure you want to delete this job?')) {
@@ -81,7 +110,7 @@ export function JobTracker() {
                 </div>
                 <button
                     className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 shadow-sm"
-                    onClick={() => document.getElementById('add-job-modal')?.classList.remove('hidden')} // Placeholder for now
+                    onClick={handleCreateJob}
                 >
                     <Plus className="mr-2 h-4 w-4" />
                     Add Job
@@ -147,7 +176,10 @@ export function JobTracker() {
                                     <td className="px-4 py-3 text-muted-foreground text-xs">{job.source}</td>
                                     <td className="px-4 py-3 text-right">
                                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0">
+                                            <button
+                                                onClick={() => handleEditJob(job)}
+                                                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0"
+                                            >
                                                 <Pencil size={14} className="text-muted-foreground" />
                                             </button>
                                             <button
@@ -164,6 +196,13 @@ export function JobTracker() {
                     </table>
                 </div>
             </div>
+
+            <JobForm
+                isOpen={isJobModalOpen}
+                onClose={() => setIsJobModalOpen(false)}
+                onSave={handleSaveJob}
+                initialData={editingJob}
+            />
         </div>
     );
 }

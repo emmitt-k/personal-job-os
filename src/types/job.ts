@@ -18,8 +18,9 @@ export interface Job {
     dateApplied: Date;
     source: string;
     profileId?: number; // FK to Profile
+    description?: string; // Full job description
     resumeSnapshot?: string; // The generated resume text
-    notes: string;
+    notes?: string;
     createdAt: Date;
     updatedAt: Date;
 }
