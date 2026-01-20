@@ -44,6 +44,11 @@ export async function parseResumeWithAI(resumeText: string): Promise<Profile> {
             startDate: string; // e.g. "2014"
             endDate: string; // e.g. "2018"
         }>;
+        certifications: Array<{
+            name: string;
+            issuer: string;
+            year: string;
+        }>;
     }
     
     If any field is missing, use empty strings or empty arrays. Do not invent data.
@@ -111,6 +116,13 @@ export async function parseResumeWithAI(resumeText: string): Promise<Profile> {
                 degree: e.degree || '',
                 startDate: e.startDate || '',
                 endDate: e.endDate || ''
+            })) : [],
+            certifications: Array.isArray(parsed.certifications) ? parsed.certifications.map((c: any) => ({
+                id: uuidv4(),
+                name: c.name || '',
+                issuer: c.issuer || '',
+                year: c.year || '',
+                url: ''
             })) : [],
             updatedAt: new Date(),
         };

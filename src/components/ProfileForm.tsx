@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { type Profile, type Experience, type Project, type Education } from '@/types/profile';
-import { X, Plus, Trash2, Briefcase, GraduationCap, FolderGit2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { type Profile, type Experience, type Project, type Education, type Certification } from '@/types/profile';
+import { X, Plus, Trash2, Pencil } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ProfileFormProps {
@@ -19,6 +18,7 @@ const EMPTY_PROFILE: Profile = {
     experience: [],
     projects: [],
     education: [],
+    certifications: [],
     updatedAt: new Date(),
 };
 
@@ -27,16 +27,17 @@ export function ProfileForm({ isOpen, onClose, onSave, initialData }: ProfileFor
     const [skillInput, setSkillInput] = useState('');
 
     // Sub-modal states
-    const [activeSection, setActiveSection] = useState<'main' | 'experience' | 'project' | 'education'>('main');
+    const [activeSection, setActiveSection] = useState<'main' | 'experience' | 'project' | 'education' | 'certification'>('main');
 
     // Temp states for new items
     const [tempExperience, setTempExperience] = useState<Partial<Experience>>({});
     const [tempProject, setTempProject] = useState<Partial<Project>>({});
     const [tempEducation, setTempEducation] = useState<Partial<Education>>({});
+    const [tempCertification, setTempCertification] = useState<Partial<Certification>>({});
 
     useEffect(() => {
         if (isOpen) {
-            setFormData(initialData ? { ...initialData } : { ...EMPTY_PROFILE, skills: [], experience: [], projects: [], education: [] });
+            setFormData(initialData ? { ...initialData, certifications: initialData.certifications || [] } : { ...EMPTY_PROFILE, skills: [], experience: [], projects: [], education: [], certifications: [] });
             setActiveSection('main');
         }
     }, [isOpen, initialData]);
@@ -64,6 +65,7 @@ export function ProfileForm({ isOpen, onClose, onSave, initialData }: ProfileFor
 
     // --- GENERIC LIST HANDLERS ---
     const removeItem = (listKey: keyof Profile, id: string) => {
+        if (listKey === 'certifications' && !formData.certifications) return;
         setFormData(prev => ({
             ...prev,
             [listKey]: (prev[listKey] as any[]).filter((item: any) => item.id !== id)
@@ -73,44 +75,100 @@ export function ProfileForm({ isOpen, onClose, onSave, initialData }: ProfileFor
     // --- SUB-MODAL SAVERS ---
     const saveExperience = () => {
         if (!tempExperience.company || !tempExperience.role) return;
-        const newExp: Experience = {
-            id: uuidv4(),
-            company: tempExperience.company,
-            role: tempExperience.role,
-            startDate: tempExperience.startDate || '',
-            endDate: tempExperience.endDate || '',
-            current: tempExperience.current || false,
-            description: tempExperience.description || '',
-        };
-        setFormData(prev => ({ ...prev, experience: [...prev.experience, newExp] }));
+
+        if (tempExperience.id) {
+            // Update existing
+            setFormData(prev => ({
+                ...prev,
+                experience: prev.experience.map(item =>
+                    item.id === tempExperience.id ? { ...item, ...tempExperience } as Experience : item
+                )
+            }));
+        } else {
+            // Add new
+            const newExp: Experience = {
+                id: uuidv4(),
+                company: tempExperience.company,
+                role: tempExperience.role,
+                startDate: tempExperience.startDate || '',
+                endDate: tempExperience.endDate || '',
+                current: tempExperience.current || false,
+                description: tempExperience.description || '',
+            };
+            setFormData(prev => ({ ...prev, experience: [...prev.experience, newExp] }));
+        }
         setTempExperience({});
         setActiveSection('main');
     };
 
     const saveProject = () => {
         if (!tempProject.name) return;
-        const newProj: Project = {
-            id: uuidv4(),
-            name: tempProject.name,
-            description: tempProject.description || '',
-            url: tempProject.url || '',
-        };
-        setFormData(prev => ({ ...prev, projects: [...prev.projects, newProj] }));
+
+        if (tempProject.id) {
+            setFormData(prev => ({
+                ...prev,
+                projects: prev.projects.map(item =>
+                    item.id === tempProject.id ? { ...item, ...tempProject } as Project : item
+                )
+            }));
+        } else {
+            const newProj: Project = {
+                id: uuidv4(),
+                name: tempProject.name,
+                description: tempProject.description || '',
+                url: tempProject.url || '',
+            };
+            setFormData(prev => ({ ...prev, projects: [...prev.projects, newProj] }));
+        }
         setTempProject({});
         setActiveSection('main');
     };
 
     const saveEducation = () => {
         if (!tempEducation.institution || !tempEducation.degree) return;
-        const newEdu: Education = {
-            id: uuidv4(),
-            institution: tempEducation.institution,
-            degree: tempEducation.degree,
-            startDate: tempEducation.startDate || '',
-            endDate: tempEducation.endDate || '',
-        };
-        setFormData(prev => ({ ...prev, education: [...prev.education, newEdu] }));
+
+        if (tempEducation.id) {
+            setFormData(prev => ({
+                ...prev,
+                education: prev.education.map(item =>
+                    item.id === tempEducation.id ? { ...item, ...tempEducation } as Education : item
+                )
+            }));
+        } else {
+            const newEdu: Education = {
+                id: uuidv4(),
+                institution: tempEducation.institution,
+                degree: tempEducation.degree,
+                startDate: tempEducation.startDate || '',
+                endDate: tempEducation.endDate || '',
+            };
+            setFormData(prev => ({ ...prev, education: [...prev.education, newEdu] }));
+        }
         setTempEducation({});
+        setActiveSection('main');
+    };
+
+    const saveCertification = () => {
+        if (!tempCertification.name || !tempCertification.issuer) return;
+
+        if (tempCertification.id) {
+            setFormData(prev => ({
+                ...prev,
+                certifications: prev.certifications.map(item =>
+                    item.id === tempCertification.id ? { ...item, ...tempCertification } as Certification : item
+                )
+            }));
+        } else {
+            const newCert: Certification = {
+                id: uuidv4(),
+                name: tempCertification.name,
+                issuer: tempCertification.issuer,
+                year: tempCertification.year || '',
+                url: tempCertification.url || '',
+            };
+            setFormData(prev => ({ ...prev, certifications: [...prev.certifications, newCert] }));
+        }
+        setTempCertification({});
         setActiveSection('main');
     };
 
@@ -226,6 +284,12 @@ export function ProfileForm({ isOpen, onClose, onSave, initialData }: ProfileFor
                                     <p className="text-xs text-muted-foreground line-clamp-1">{exp.description}</p>
                                 </div>
                                 <button
+                                    onClick={() => { setTempExperience(exp); setActiveSection('experience'); }}
+                                    className="absolute top-2 right-8 p-1 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <Pencil size={16} />
+                                </button>
+                                <button
                                     onClick={() => removeItem('experience', exp.id)}
                                     className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
@@ -257,6 +321,12 @@ export function ProfileForm({ isOpen, onClose, onSave, initialData }: ProfileFor
                                     <div className="font-medium text-sm text-foreground">{proj.name}</div>
                                     <p className="text-xs text-muted-foreground line-clamp-1">{proj.description}</p>
                                 </div>
+                                <button
+                                    onClick={() => { setTempProject(proj); setActiveSection('project'); }}
+                                    className="absolute top-2 right-8 p-1 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <Pencil size={16} />
+                                </button>
                                 <button
                                     onClick={() => removeItem('projects', proj.id)}
                                     className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
@@ -290,7 +360,51 @@ export function ProfileForm({ isOpen, onClose, onSave, initialData }: ProfileFor
                                     <div className="text-xs text-muted-foreground">{edu.institution} • {edu.startDate} - {edu.endDate}</div>
                                 </div>
                                 <button
+                                    onClick={() => { setTempEducation(edu); setActiveSection('education'); }}
+                                    className="absolute top-2 right-8 p-1 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <Pencil size={16} />
+                                </button>
+                                <button
                                     onClick={() => removeItem('education', edu.id)}
+                                    className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* CERTIFICATIONS SECTION */}
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium">Certifications</label>
+                        <button
+                            onClick={() => { setTempCertification({}); setActiveSection('certification'); }}
+                            className="text-xs flex items-center gap-1 text-primary hover:text-primary/80 font-medium"
+                        >
+                            <Plus size={14} /> Add Certification
+                        </button>
+                    </div>
+                    {formData.certifications?.length === 0 && (
+                        <div className="text-sm text-muted-foreground italic">No certifications added yet.</div>
+                    )}
+                    <div className="space-y-2">
+                        {formData.certifications?.map(cert => (
+                            <div key={cert.id} className="rounded-md border border-border bg-muted/40 p-3 flex group relative">
+                                <div className="flex-1 space-y-1">
+                                    <div className="font-medium text-sm text-foreground">{cert.name}</div>
+                                    <div className="text-xs text-muted-foreground">{cert.issuer} • {cert.year}</div>
+                                </div>
+                                <button
+                                    onClick={() => { setTempCertification(cert); setActiveSection('certification'); }}
+                                    className="absolute top-2 right-8 p-1 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <Pencil size={16} />
+                                </button>
+                                <button
+                                    onClick={() => removeItem('certifications', cert.id)}
                                     className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
                                     <Trash2 size={16} />
@@ -323,7 +437,9 @@ export function ProfileForm({ isOpen, onClose, onSave, initialData }: ProfileFor
     const renderExperienceForm = () => (
         <>
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <h2 className="text-lg font-semibold text-foreground">Add Experience</h2>
+                <h2 className="text-lg font-semibold text-foreground">
+                    {tempExperience.id ? 'Edit Experience' : 'Add Experience'}
+                </h2>
                 <button onClick={() => setActiveSection('main')} className="text-muted-foreground hover:text-foreground">
                     <X size={20} />
                 </button>
@@ -399,7 +515,9 @@ export function ProfileForm({ isOpen, onClose, onSave, initialData }: ProfileFor
     const renderProjectForm = () => (
         <>
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <h2 className="text-lg font-semibold text-foreground">Add Project</h2>
+                <h2 className="text-lg font-semibold text-foreground">
+                    {tempProject.id ? 'Edit Project' : 'Add Project'}
+                </h2>
                 <button onClick={() => setActiveSection('main')} className="text-muted-foreground hover:text-foreground">
                     <X size={20} />
                 </button>
@@ -453,7 +571,9 @@ export function ProfileForm({ isOpen, onClose, onSave, initialData }: ProfileFor
     const renderEducationForm = () => (
         <>
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <h2 className="text-lg font-semibold text-foreground">Add Education</h2>
+                <h2 className="text-lg font-semibold text-foreground">
+                    {tempEducation.id ? 'Edit Education' : 'Add Education'}
+                </h2>
                 <button onClick={() => setActiveSection('main')} className="text-muted-foreground hover:text-foreground">
                     <X size={20} />
                 </button>
@@ -517,6 +637,76 @@ export function ProfileForm({ isOpen, onClose, onSave, initialData }: ProfileFor
         </>
     );
 
+    // 5. CERTIFICATION SUB-MODAL
+    const renderCertificationForm = () => (
+        <>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                <h2 className="text-lg font-semibold text-foreground">
+                    {tempCertification.id ? 'Edit Certification' : 'Add Certification'}
+                </h2>
+                <button onClick={() => setActiveSection('main')} className="text-muted-foreground hover:text-foreground">
+                    <X size={20} />
+                </button>
+            </div>
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
+                <div className="space-y-2">
+                    <label className="text-sm font-medium">Certification Name</label>
+                    <input
+                        type="text"
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+                        value={tempCertification.name || ''}
+                        onChange={e => setTempCertification({ ...tempCertification, name: e.target.value })}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-medium">Issuer</label>
+                    <input
+                        type="text"
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+                        value={tempCertification.issuer || ''}
+                        onChange={e => setTempCertification({ ...tempCertification, issuer: e.target.value })}
+                    />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Year Issued</label>
+                        <input
+                            type="text"
+                            placeholder="YYYY"
+                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+                            value={tempCertification.year || ''}
+                            onChange={e => setTempCertification({ ...tempCertification, year: e.target.value })}
+                        />
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-medium">URL (Optional)</label>
+                    <input
+                        type="text"
+                        placeholder="https://..."
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+                        value={tempCertification.url || ''}
+                        onChange={e => setTempCertification({ ...tempCertification, url: e.target.value })}
+                    />
+                </div>
+            </div>
+            <div className="flex items-center justify-end px-6 py-4 border-t border-border bg-muted/30 gap-3">
+                <button
+                    onClick={() => setActiveSection('main')}
+                    className="px-4 py-2 text-sm font-medium text-foreground hover:bg-accent rounded-md"
+                >
+                    Back
+                </button>
+                <button
+                    onClick={saveCertification}
+                    className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 rounded-md shadow-sm"
+                >
+                    Save Certification
+                </button>
+            </div>
+        </>
+    );
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 sm:p-6 fade-in duration-200">
             <div className="fixed inset-0" onClick={onClose}></div>
@@ -526,6 +716,7 @@ export function ProfileForm({ isOpen, onClose, onSave, initialData }: ProfileFor
                 {activeSection === 'experience' && renderExperienceForm()}
                 {activeSection === 'project' && renderProjectForm()}
                 {activeSection === 'education' && renderEducationForm()}
+                {activeSection === 'certification' && renderCertificationForm()}
 
             </div>
         </div>

@@ -28,6 +28,7 @@ export interface Certification {
     name: string;
     issuer: string;
     year: string;
+    url?: string;
 }
 
 export interface Profile {
@@ -39,6 +40,6 @@ export interface Profile {
     experience: Experience[];
     projects: Project[];
     education: Education[];
-    certifications?: Certification[];
+    certifications: Certification[];
     updatedAt: Date;
 }

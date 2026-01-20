@@ -63,10 +63,7 @@ export function Layout({ children }: LayoutProps) {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col min-w-0 bg-background">
-                <div className="flex-1 overflow-auto bg-muted/30">
-                    {/* Pages usually have their own container/header, so we provide the slot here */}
-                    {children}
-                </div>
+                {children}
             </main>
         </div>
     );
