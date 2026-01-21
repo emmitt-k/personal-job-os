@@ -5,6 +5,8 @@ import { db } from '@/db/client';
 import { X, Copy, Download, RefreshCw, Wand2 } from 'lucide-react';
 import { generateResumeDraft, refineResume } from '@/ai/openrouter';
 import ReactMarkdown from 'react-markdown';
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
 
 interface JobFormProps {
     isOpen: boolean;
@@ -38,19 +40,64 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
     const [selectedProfileId, setSelectedProfileId] = useState<number | ''>('');
     const [refineInstructions, setRefineInstructions] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [draftId, setDraftId] = useState<number | null>(null);
+    const [hasCopied, setHasCopied] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
 
+    // Load Draft on Mount
     useEffect(() => {
-        if (isOpen) {
-            setFormData(initialData ? { ...initialData } : { ...EMPTY_JOB, dateApplied: new Date(), createdAt: new Date(), updatedAt: new Date() });
-            // Select first profile by default if none selected and creating new
-            if (!initialData && profiles.length > 0 && !selectedProfileId) {
-                if (profiles.length > 0) setSelectedProfileId(profiles[0].id!);
+        const loadDraft = async () => {
+            if (isOpen && !initialData) {
+                // Only load draft for NEW jobs
+                const latestDraft = await db.jobDrafts.orderBy('updatedAt').last();
+                if (latestDraft) {
+                    setFormData(latestDraft.formData);
+                    setDraftId(latestDraft.id!);
+                    if (latestDraft.formData.profileId) {
+                        setSelectedProfileId(latestDraft.formData.profileId);
+                    }
+                    console.log("Restored draft:", latestDraft.id);
+                } else {
+                    // Initialize clean state if no draft
+                    setFormData({ ...EMPTY_JOB, dateApplied: new Date(), createdAt: new Date(), updatedAt: new Date() });
+                    if (profiles.length > 0) setSelectedProfileId(profiles[0].id!);
+                }
+            } else if (isOpen && initialData) {
+                setFormData({ ...initialData });
+                if (initialData.profileId) setSelectedProfileId(initialData.profileId);
             }
-            if (initialData?.profileId) {
-                setSelectedProfileId(initialData.profileId);
-            }
-        }
+        };
+        loadDraft();
     }, [isOpen, initialData, profiles]);
+
+    // Autosave Draft
+    useEffect(() => {
+        if (!isOpen || initialData) return; // Don't autosave when editing existing jobs (handled by explicit save) or closed
+
+        const saveDraft = async () => {
+            // Avoid saving empty state immediately
+            if (!formData.company && !formData.role && !formData.description) return;
+
+            try {
+                const draftData = {
+                    formData: { ...formData, profileId: selectedProfileId ? Number(selectedProfileId) : undefined },
+                    updatedAt: new Date()
+                };
+
+                if (draftId) {
+                    await db.jobDrafts.update(draftId, draftData);
+                } else {
+                    const newId = await db.jobDrafts.add(draftData);
+                    setDraftId(newId as number);
+                }
+            } catch (err) {
+                console.error("Failed to autosave draft", err);
+            }
+        };
+
+        const timeout = setTimeout(saveDraft, 1000); // Debounce 1s
+        return () => clearTimeout(timeout);
+    }, [formData, selectedProfileId, isOpen, initialData, draftId]);
 
     if (!isOpen) return null;
 
@@ -104,12 +151,88 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!formData.company || !formData.role) {
             alert("Company and Role are required.");
             return;
         }
-        onSave(formData);
+        await onSave(formData);
+
+        // Clear draft after successful save
+        if (draftId) {
+            await db.jobDrafts.delete(draftId);
+            setDraftId(null);
+        }
+    };
+
+    const handleCopyText = async () => {
+        if (!formData.resumeSnapshot) return;
+
+        // Construct full text including header if profile selected
+        let fullText = formData.resumeSnapshot;
+
+        if (selectedProfileId) {
+            const profile = profiles.find(p => p.id === Number(selectedProfileId));
+            if (profile) {
+                const header = [
+                    profile.name.toUpperCase(),
+                    [
+                        profile.contactInfo?.phone,
+                        profile.contactInfo?.email,
+                        profile.contactInfo?.location,
+                        profile.hrData?.workPreference ? `Open to ${profile.hrData.workPreference}` : ''
+                    ].filter(Boolean).join(' ◇ '),
+                    [
+                        profile.contactInfo?.linkedin ? 'LinkedIn' : '',
+                        profile.contactInfo?.github ? 'GitHub' : '',
+                        profile.hrData?.noticePeriod ? `Available in ${profile.hrData.noticePeriod}` : ''
+                    ].filter(Boolean).join(' ◇ ')
+                ].filter(Boolean).join('\n');
+
+                fullText = `${header}\n\n${fullText}`;
+            }
+        }
+
+        try {
+            await navigator.clipboard.writeText(fullText);
+            setHasCopied(true);
+            setTimeout(() => setHasCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+        }
+    };
+
+    const handleDownloadPDF = () => {
+        const element = document.getElementById('resume-preview-content');
+        if (!element) return;
+
+        let filename = 'Resume.pdf';
+        if (selectedProfileId) {
+            const profile = profiles.find(p => p.id === Number(selectedProfileId));
+            if (profile) {
+                // User requested: "<My Name>_resume.pdf"
+                filename = `${profile.name.replace(/\s+/g, '_')}_Resume.pdf`;
+            }
+        } else {
+            // Fallback if no profile selected
+            filename = `${formData.role.replace(/\s+/g, '_')}_${formData.company.replace(/\s+/g, '_')}_Resume.pdf`
+        }
+
+        setIsDownloading(true);
+        const opt: any = {
+            margin: [5, 5, 5, 5], // Reduced from 10mm to 5mm
+            filename: filename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            setIsDownloading(false);
+        }).catch((err: any) => {
+            console.error('PDF download error:', err);
+            setIsDownloading(false);
+        });
     };
 
     return (
@@ -283,11 +406,18 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
                                 <div className="flex items-center justify-between">
                                     <h4 className="text-sm font-semibold text-zinc-900">Preview</h4>
                                     <div className="flex gap-2">
-                                        <button className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1">
-                                            <Copy size={12} /> Copy Text
+                                        <button
+                                            onClick={handleCopyText}
+                                            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1"
+                                        >
+                                            {hasCopied ? <span className="text-green-600">Copied!</span> : <><Copy size={12} /> Copy Text</>}
                                         </button>
-                                        <button className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1">
-                                            <Download size={12} /> Download PDF
+                                        <button
+                                            onClick={handleDownloadPDF}
+                                            disabled={isDownloading}
+                                            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1 disabled:opacity-50"
+                                        >
+                                            {isDownloading ? 'Saving...' : <><Download size={12} /> Download PDF</>}
                                         </button>
                                     </div>
                                 </div>
@@ -295,34 +425,101 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
 
                             {/* Resume Preview Paper */}
                             <div className="space-y-6">
-                                <div className="bg-white border border-zinc-200 shadow-sm p-8 min-h-[750px] rounded-sm text-[11px] leading-relaxed text-zinc-800 font-serif relative">
-                                    <div className="absolute -top-2 -right-2 bg-zinc-900 text-white text-[10px] px-2 py-0.5 rounded shadow-sm font-sans font-bold uppercase tracking-widest">
-                                        Page 1
+                                <div className="bg-white border text-xs border-zinc-200 shadow-sm rounded-sm leading-relaxed text-zinc-900 font-serif relative overflow-hidden">
+                                    <div id="resume-preview-content" className="bg-white p-6 min-h-[750px]">
+                                        <div className="absolute -top-2 -right-2 bg-zinc-900 text-white text-[10px] px-2 py-0 rounded shadow-sm font-sans font-bold uppercase tracking-widest print:hidden" data-html2canvas-ignore="true">
+                                            Page 1
+                                        </div>
+                                        {formData.resumeSnapshot ? (
+                                            <div className="prose prose-zinc max-w-none">
+                                                {/* Native Header Rendering */}
+                                                {selectedProfileId && (() => {
+                                                    const profile = profiles.find(p => p.id === Number(selectedProfileId));
+                                                    if (!profile) return null;
+
+                                                    // Construct Line 1: Contact & Socials
+                                                    const line1Items = [];
+                                                    if (profile.contactInfo?.phone) line1Items.push({ text: profile.contactInfo.phone });
+                                                    if (profile.contactInfo?.email) line1Items.push({ text: profile.contactInfo.email, href: `mailto:${profile.contactInfo.email}` });
+                                                    if (profile.contactInfo?.linkedin) line1Items.push({ text: 'LinkedIn', href: profile.contactInfo.linkedin });
+                                                    if (profile.contactInfo?.github) line1Items.push({ text: 'GitHub', href: profile.contactInfo.github });
+                                                    if (profile.contactInfo?.website) line1Items.push({ text: 'Portfolio', href: profile.contactInfo.website });
+
+                                                    // Construct Line 2: Location & Availability
+                                                    const line2Items = [];
+                                                    if (profile.contactInfo?.location) line2Items.push({ text: profile.contactInfo.location });
+                                                    if (profile.hrData?.workPreference) line2Items.push({ text: `Open to ${profile.hrData.workPreference}` });
+                                                    if (profile.hrData?.noticePeriod) line2Items.push({ text: `Available in ${profile.hrData.noticePeriod}` });
+
+                                                    const renderItems = (items: any[]) => (
+                                                        <p className="text-zinc-700 text-[12px] tracking-wide font-medium flex flex-wrap justify-center gap-x-2">
+                                                            {items.map((item, index) => (
+                                                                <span key={index} className="flex items-center">
+                                                                    {item.href ? (
+                                                                        <a href={item.href} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-900 underline decoration-blue-700/30 hover:decoration-blue-900">
+                                                                            {item.text}
+                                                                        </a>
+                                                                    ) : (
+                                                                        <span>{item.text}</span>
+                                                                    )}
+                                                                    {index < items.length - 1 && <span className="ml-2 text-zinc-400">◇</span>}
+                                                                </span>
+                                                            ))}
+                                                        </p>
+                                                    );
+
+                                                    return (
+                                                        <div className="text-center border-b border-zinc-200 pb-3 mb-5 font-sans">
+                                                            <h1 className="text-3xl font-bold uppercase tracking-wide text-zinc-900 mb-2">
+                                                                {profile.name}
+                                                            </h1>
+                                                            <div className="space-y-1.5 mt-5">
+                                                                {line1Items.length > 0 && renderItems(line1Items)}
+                                                                {line2Items.length > 0 && renderItems(line2Items)}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
+
+                                                <ReactMarkdown
+                                                    components={{
+                                                        h1: ({ children }: any) => <h2 className="font-bold border-b border-zinc-900 mb-3 pb-2 uppercase tracking-wider text-sm font-sans mt-6 text-left w-full block">{children}</h2>,
+                                                        h2: ({ children }: any) => {
+                                                            const text = String(children).toLowerCase();
+                                                            const isProjects = text.includes('projects');
+                                                            return <h2 className={`font-bold border-b border-zinc-900 mb-3 pb-2 uppercase tracking-wider text-sm font-sans text-left w-full block ${isProjects ? 'mt-24' : 'mt-6'}`}>{children}</h2>;
+                                                        },
+                                                        h3: ({ children }: any) => {
+                                                            const text = String(children);
+                                                            if (text.includes('|')) {
+                                                                const [role, date] = text.split('|').map(s => s.trim());
+                                                                return (
+                                                                    <div className="flex justify-between items-baseline mt-3 mb-1">
+                                                                        <h3 className="font-bold text-sm text-zinc-900">{role}</h3>
+                                                                        <span className="text-xs font-medium italic text-zinc-600">{date}</span>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            return <h3 className="font-bold text-sm text-zinc-900 mt-3 mb-1">{children}</h3>;
+                                                        },
+                                                        ul: ({ children }: any) => <ul className="list-disc list-outside ml-4 space-y-1 mb-2">{children}</ul>,
+                                                        li: ({ children }: any) => <li className="pl-1">{children}</li>,
+                                                        p: ({ children }: any) => <p className="mb-2 last:mb-0">{children}</p>,
+                                                        hr: () => <hr className="my-4 border-zinc-200" />,
+                                                    }}
+                                                >
+                                                    {formData.resumeSnapshot}
+                                                </ReactMarkdown>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center h-[600px] text-zinc-400 space-y-4">
+                                                <Wand2 size={48} className="opacity-20" />
+                                                <p className="text-sm text-center max-w-[200px]">
+                                                    Select a profile and click "Generate Draft" to create a tailored resume.
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
-                                    {formData.resumeSnapshot ? (
-                                        <div className="prose prose-zinc max-w-none">
-                                            <ReactMarkdown
-                                                components={{
-                                                    h1: ({ children }: any) => <h1 className="text-lg font-bold uppercase tracking-wide text-center border-b border-zinc-200 pb-4 mb-4 font-sans">{children}</h1>,
-                                                    h2: ({ children }: any) => <h2 className="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs font-sans mt-4">{children}</h2>,
-                                                    h3: ({ children }: any) => <h3 className="font-bold text-xs mt-2">{children}</h3>,
-                                                    ul: ({ children }: any) => <ul className="list-disc list-outside ml-4 space-y-1 mb-2">{children}</ul>,
-                                                    li: ({ children }: any) => <li className="pl-1">{children}</li>,
-                                                    p: ({ children }: any) => <p className="mb-2 last:mb-0">{children}</p>,
-                                                    hr: () => <hr className="my-4 border-zinc-200" />,
-                                                }}
-                                            >
-                                                {formData.resumeSnapshot}
-                                            </ReactMarkdown>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col items-center justify-center h-[600px] text-zinc-400 space-y-4">
-                                            <Wand2 size={48} className="opacity-20" />
-                                            <p className="text-sm text-center max-w-[200px]">
-                                                Select a profile and click "Generate Draft" to create a tailored resume.
-                                            </p>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>

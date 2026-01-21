@@ -37,6 +37,23 @@ export interface Profile {
     targetRole: string; // e.g. "Software Engineer"
     intro: string;
     skills: string[]; // Ordered list of strings
+
+    // Contact Info
+    contactInfo: {
+        email?: string;
+        phone?: string;
+        location?: string;
+        linkedin?: string;
+        github?: string;
+        website?: string;
+    };
+
+    // HR Data
+    hrData: {
+        workPreference?: 'Remote' | 'On-Site' | 'Hybrid';
+        noticePeriod?: string;
+    };
+
     experience: Experience[];
     projects: Project[];
     education: Education[];

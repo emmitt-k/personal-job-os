@@ -21,28 +21,40 @@ export async function parseResumeWithAI(resumeText: string): Promise<Profile> {
     The structure must strictly follow this TypeScript interface (excluding IDs, which I will generate):
     
     interface ParsedProfile {
-        name: string; // The candidate's full name, inferred from the top of the resume.
-        targetRole: string; // The candidate's current or target role title.
-        intro: string; // A brief professional summary (2-3 sentences), synthesized from the resume.
-        skills: string[]; // List of technical skills, languages, tools.
+        name: string;
+        targetRole: string;
+        intro: string;
+        skills: string[];
+        contactInfo: {
+            email: string;
+            phone: string;
+            location: string;
+            linkedin: string;
+            github: string;
+            website: string;
+        };
+        hrData: {
+            noticePeriod: string; // e.g. "Immediate", "2 weeks", "3 months"
+            workPreference: string; // e.g. "Remote", "Hybrid", "On-site" (Infer if possible)
+        };
         experience: Array<{
             company: string;
             role: string;
-            startDate: string; // e.g., "Jan 2020", "2020", or "Present"
-            endDate: string; // e.g., "Jan 2022", "2022", or "Present". If still active, use "Present".
-            current: boolean; // true if endDate is "Present"
-            description: string; // A concise summary of responsibilities and achievements (max 300 chars).
+            startDate: string;
+            endDate: string;
+            current: boolean;
+            description: string;
         }>;
         projects: Array<{
             name: string;
-            description: string; // Brief description of what it does and tech used.
-            url?: string; // GitHub or live link if found.
+            description: string;
+            url?: string;
         }>;
         education: Array<{
             institution: string;
             degree: string;
-            startDate: string; // e.g. "2014"
-            endDate: string; // e.g. "2018"
+            startDate: string;
+            endDate: string;
         }>;
         certifications: Array<{
             name: string;
@@ -95,6 +107,18 @@ export async function parseResumeWithAI(resumeText: string): Promise<Profile> {
             targetRole: parsed.targetRole || 'Job Seeker',
             intro: parsed.intro || '',
             skills: Array.isArray(parsed.skills) ? parsed.skills : [],
+            contactInfo: {
+                email: parsed.contactInfo?.email || '',
+                phone: parsed.contactInfo?.phone || '',
+                location: parsed.contactInfo?.location || '',
+                linkedin: parsed.contactInfo?.linkedin || '',
+                github: parsed.contactInfo?.github || '',
+                website: parsed.contactInfo?.website || '',
+            },
+            hrData: {
+                noticePeriod: parsed.hrData?.noticePeriod || '',
+                workPreference: parsed.hrData?.workPreference || '',
+            },
             experience: Array.isArray(parsed.experience) ? parsed.experience.map((e: any) => ({
                 id: uuidv4(),
                 company: e.company || 'Unknown',
@@ -151,11 +175,23 @@ export async function generateResumeDraft(profile: Profile, jobDetails: { compan
     2. The Job Details (Company, Role, Description)
     
     Output:
-    A complete, plain-text resume formatted in Markdown. 
+    A complete, plain-text resume formatted in Markdown.     - **CRITICAL**: The output must start IMMEDIATELY with the **## Professional Summary** header (Use H2).
+    - **CRITICAL**: You MUST use H2 headers (##) for all main sections to ensure proper styling.
+    - **CRITICAL**: You MUST include the following sections in this order:
+      1. ## Professional Summary
+      2. ## Skills
+      3. ## Experience
+      4. ## Projects
+      5. ## Education
+    - **Format Experience** exactly like this (Use H3 for roles):
+      ### Role Title | Start Date - End Date
+      **Company Name**
+      *   Bullet point...
+    - **CRITICAL**: Do NOT output the candidate's Name, Phone, Email, Location, or Links. This is handled externally.
+    - **CRITICAL**: Do NOT add an "Additional Information" section. Integrate soft skills into the Experience descriptions.
+    - **CRITICAL**: Do NOT add a concluding paragraph (e.g., "This resume aligns with..."). End strictly with the last section.
     - Focus on relevant skills and experience.
     - Rewrite the summary to align with the job.
-    - Reorder or highlight bullet points that match the job requirements.
-    - Do NOT invent false information, but emphasize truthful relevant details.
     `;
 
     const userPrompt = `
@@ -199,8 +235,30 @@ export async function generateResumeDraft(profile: Profile, jobDetails: { compan
         // Strip code blocks if present (e.g. ```markdown ... ```)
         content = content.replace(/^```markdown\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '');
 
-        return content;
+        // Defensive cleanup: Check for section headers to remove intro fluff
+        const firstHeaderMatch = content.match(/^(#+\s*(Professional Summary|Summary|Skills|Experience))/im);
+        if (firstHeaderMatch && firstHeaderMatch.index && firstHeaderMatch.index > 0) {
+            content = content.substring(firstHeaderMatch.index);
+        }
 
+        // Defensive cleanup: Remove AI conclusion fluff at the end
+        const fluffPatterns = [
+            /This resume aligns (closely|well) with/i,
+            /This resume has been (tailored|optimized) for/i,
+            /I have highlighted (the|your)/i,
+            /The above resume/i,
+            /Please let me know if/i
+        ];
+        const lines = content.split('\n');
+        for (let i = lines.length - 1; i >= Math.max(0, lines.length - 10); i--) {
+            if (fluffPatterns.some(p => p.test(lines[i]))) {
+                // Cut everything from here
+                content = lines.slice(0, i).join('\n').trim();
+                break;
+            }
+        }
+
+        return content;
     } catch (error) {
         console.error("AI Gen Error:", error);
         throw error;
@@ -219,6 +277,16 @@ export async function refineResume(currentResume: string, instructions: string):
     You are an expert resume editor. You will refine an existing resume draft based on specific user instructions.
     Return the FULL updated resume text in Markdown. Do not return just the diff.
     Do NOT include markdown formatted code blocks (e.g. \`\`\`markdown). Just return the content.
+    **CRITICAL RULES**:
+    1. Do NOT include or re-add the contact header (Name, Phone, etc.) at the top. Start with the Summary.
+    2. Do NOT add an "Additional Information" section.
+    3. **CRITICAL**: Use \`##\` (H2) for all main section headers (Summary, Skills, Experience, Projects, Education) to maintain styling.
+    4. **Format Experience** exactly like this (Use H3):
+       ### Role Title | Start Date - End Date
+       **Company Name**
+       *   Bullet point...
+    5. Maintain a professional tone.
+    6. **CRITICAL**: Do NOT add a concluding paragraph (e.g., "This resume aligns with..."). Return ONLY the resume content.
     `;
 
     const userPrompt = `
@@ -259,8 +327,14 @@ export async function refineResume(currentResume: string, instructions: string):
         // Strip code blocks if present
         content = content.replace(/^```markdown\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '');
 
-        return content;
+        // Defensive cleanup: Check for section headers to remove intro fluff
+        const firstHeaderMatch = content.match(/^(#+\s*(Professional Summary|Summary|Skills|Experience))/im);
+        if (firstHeaderMatch && firstHeaderMatch.index && firstHeaderMatch.index > 0) {
+            // Keep everything starting from the match
+            content = content.substring(firstHeaderMatch.index);
+        }
 
+        return content;
     } catch (error) {
         console.error("AI Refine Error:", error);
         throw error;
