@@ -5,6 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'openai/gpt-4o-mini'; // Cost-effective and capable
 
+export interface ATSAnalysis {
+    score: number;
+    feedback: string;
+    missingKeywords: string[];
+}
+
 export async function parseResumeWithAI(resumeText: string): Promise<Profile> {
     const settings = await db.settings.toCollection().first();
     const apiKey = settings?.openRouterApiKey;
@@ -159,7 +165,7 @@ export async function parseResumeWithAI(resumeText: string): Promise<Profile> {
     }
 }
 
-export async function generateResumeDraft(profile: Profile, jobDetails: { company: string; role: string; description: string }): Promise<string> {
+export async function extractKeywords(jobDescription: string): Promise<string[]> {
     const settings = await db.settings.toCollection().first();
     const apiKey = settings?.openRouterApiKey;
 
@@ -168,30 +174,116 @@ export async function generateResumeDraft(profile: Profile, jobDetails: { compan
     }
 
     const systemPrompt = `
-    You are an expert resume writer. Your goal is to tailor a candidate's profile to a specific job description.
+    You are an expert ATS optimizer. Extract the most critical hard skills, technologies, and keywords from the following Job Description as individual items.
     
+    Return ONLY a JSON array of strings, where each string is a single keyword or skill.
+    Avoid grouping keywords together. Do NOT include category names.
+
+    Example Output:
+    [
+        "Node.js",
+        "Python",
+        "PHP",
+        "AWS",
+        "React.js",
+        "TypeScript",
+        "Docker",
+        "Kubernetes"
+    ]
+
+    Ensure you cover all major technical areas mentioned in the JD.
+    `;
+
+    try {
+        const response = await fetch(OPENROUTER_API_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'HTTP-Referer': 'https://jobos.local',
+                'X-Title': 'Personal Job OS',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: MODEL,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: jobDescription }
+                ],
+                temperature: 0.1,
+                response_format: { type: 'json_object' }
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`AI Request Failed: ${errorData.error?.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+        const content = data.choices[0]?.message?.content;
+
+        if (!content) return [];
+
+        const parsed = JSON.parse(content);
+        // Handle both direct array or object with key
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed.keywords && Array.isArray(parsed.keywords)) return parsed.keywords;
+        if (parsed.skills && Array.isArray(parsed.skills)) return parsed.skills;
+
+        return [];
+    } catch (error) {
+        console.error("Keyword Extraction Error:", error);
+        return []; // Fail gracefully
+    }
+}
+
+export async function generateResumeDraft(profile: Profile, jobDetails: { company: string; role: string; description: string }, keywords: string[] = []): Promise<string> {
+    const settings = await db.settings.toCollection().first();
+    const apiKey = settings?.openRouterApiKey;
+
+    if (!apiKey) {
+        throw new Error("OpenRouter API Key is missing. Please configure it in Settings.");
+    }
+
+    const systemPrompt = `
+    You are an expert resume writer. Your goal is to tailor a candidate's profile to a specific job description using a STRICT, LOCKED-IN FORMAT.
+
     You will be given:
     1. The Candidate's Profile (JSON)
     2. The Job Details (Company, Role, Description)
     
     Output:
-    A complete, plain-text resume formatted in Markdown.     - **CRITICAL**: The output must start IMMEDIATELY with the **## Professional Summary** header (Use H2).
-    - **CRITICAL**: You MUST use H2 headers (##) for all main sections to ensure proper styling.
-    - **CRITICAL**: You MUST include the following sections in this order:
-      1. ## Professional Summary
-      2. ## Skills
-      3. ## Experience
-      4. ## Projects
-      5. ## Education
-    - **Format Experience** exactly like this (Use H3 for roles):
-      ### Role Title | Start Date - End Date
-      **Company Name**
-      *   Bullet point...
-    - **CRITICAL**: Do NOT output the candidate's Name, Phone, Email, Location, or Links. This is handled externally.
-    - **CRITICAL**: Do NOT add an "Additional Information" section. Integrate soft skills into the Experience descriptions.
-    - **CRITICAL**: Do NOT add a concluding paragraph (e.g., "This resume aligns with..."). End strictly with the last section.
-    - Focus on relevant skills and experience.
-    - Rewrite the summary to align with the job.
+    A complete, plain-text resume formatted in Markdown.
+    
+    **CRITICAL FORMATTING RULES (DO NOT DEVIATE):**
+
+    1. **NO HEADER**: Start immediately with "## PROFESSIONAL SUMMARY". Do NOT output Name, Phone, Email, Links.
+    2. **SECTION HEADERS**: Use H2 (##) and UPPERCASE for:
+       - ## PROFESSIONAL SUMMARY
+       - ## SKILLS
+       - ## EXPERIENCE
+       - ## PROJECTS
+       - ## EDUCATION
+    
+    3. **SKILLS FORMAT**:
+       **Category Name**: Skill 1, Skill 2, Skill 3
+    
+    4. **EXPERIENCE FORMAT** (Strictly follow this structure):
+       ### Role Title | Start Date - End Date
+       **Company Name**
+       *   Bullet point starts here...
+       *   Another bullet point...
+       
+       *Note: If multiple roles at same company, repeat the Company Name line or structure clearly.*
+    
+    5. **EDUCATION FORMAT**:
+       ### Degree Name | Start Date - End Date
+       **Institution Name**
+    
+    6. **CONTENT RULES**:
+       - **NO FLUFF**: Do not add "Additional Information", "References", or conversational outros like "Hope this helps".
+       - **NO CODE BLOCKS**: Return raw markdown text.
+       - **Tone**: Professional, action-oriented, quantifiable results.
     `;
 
     const userPrompt = `
@@ -203,6 +295,9 @@ export async function generateResumeDraft(profile: Profile, jobDetails: { compan
     Role: ${jobDetails.role}
     Description:
     ${jobDetails.description}
+
+    MANDATORY KEYWORDS TO INTEGRATE:
+    ${keywords.length > 0 ? keywords.join(', ') : 'None specified. Extract relevant keywords from the description.'}
     `;
 
     try {
@@ -274,19 +369,23 @@ export async function refineResume(currentResume: string, instructions: string):
     }
 
     const systemPrompt = `
-    You are an expert resume editor. You will refine an existing resume draft based on specific user instructions.
-    Return the FULL updated resume text in Markdown. Do not return just the diff.
-    Do NOT include markdown formatted code blocks (e.g. \`\`\`markdown). Just return the content.
-    **CRITICAL RULES**:
-    1. Do NOT include or re-add the contact header (Name, Phone, etc.) at the top. Start with the Summary.
-    2. Do NOT add an "Additional Information" section.
-    3. **CRITICAL**: Use \`##\` (H2) for all main section headers (Summary, Skills, Experience, Projects, Education) to maintain styling.
-    4. **Format Experience** exactly like this (Use H3):
+    You are an expert resume editor. You will refine an existing resume draft based on specific user instructions while maintaining a STRICT LOCKED-IN FORMAT.
+    
+    **CRITICAL FORMATTING RULES (DO NOT DEVIATE):**
+    
+    1. **NO HEADER**: Start immediately with the first section (e.g., ## PROFESSIONAL SUMMARY). Do NOT add Name/Contact headers.
+    2. **HEADINGS**: Use H2 (##) and UPPERCASE for all main sections.
+    3. **EXPERIENCE FORMAT**:
        ### Role Title | Start Date - End Date
        **Company Name**
        *   Bullet point...
-    5. Maintain a professional tone.
-    6. **CRITICAL**: Do NOT add a concluding paragraph (e.g., "This resume aligns with..."). Return ONLY the resume content.
+    4. **EDUCATION FORMAT**:
+       ### Degree Name | Start Date - End Date
+       **Institution Name**
+    
+    5. **NO FLUFF**: Do not add conversational text, "Here is the updated resume", or code blocks. Just the raw markdown.
+    
+    **INSTRUCTIONS**: verify the user instructions below and apply them to the resume content.
     `;
 
     const userPrompt = `
@@ -338,5 +437,125 @@ export async function refineResume(currentResume: string, instructions: string):
     } catch (error) {
         console.error("AI Refine Error:", error);
         throw error;
+    }
+}
+
+export async function calculateATSScore(resumeText: string, jobDescription: string): Promise<ATSAnalysis> {
+    const settings = await db.settings.toCollection().first();
+    const apiKey = settings?.openRouterApiKey;
+
+    if (!apiKey) {
+        // Fail silently or return 0 if no partial analysis possible without key, 
+        // but ideally the calling component checks for key.
+        return { score: 0, feedback: "API Key missing", missingKeywords: [] };
+    }
+
+    const systemPrompt = `
+    You are an expert ATS (Applicant Tracking System) analyzer with deep knowledge of recruitment algorithms.
+    
+    Your Task:
+    Perform a comprehensive analysis of the Resume against the Job Description and calculate a precise ATS Match Score (0-100).
+    
+    Return the result as a valid JSON object matching this TypeScript interface:
+    
+    interface ATSAnalysis {
+        score: number; // Integer between 0 and 100
+        feedback: string; // A concise summary (max 2 sentences) explaining the score.
+        missingKeywords: string[]; // Up to 5 critical keywords from the JD missing in the resume.
+    }
+    
+    DETAILED SCORING CRITERIA:
+    
+    1. HARD SKILLS & KEYWORD MATCHING (45 points):
+       - Exact matches for required technologies, tools, frameworks (20 pts)
+       - Skill variations and synonyms (e.g., "JS" vs "JavaScript") (10 pts)
+       - Certifications and qualifications mentioned in JD (10 pts)
+       - Industry-specific terminology and jargon (5 pts)
+    
+    2. EXPERIENCE ALIGNMENT (25 points):
+       - Years of experience match (10 pts)
+       - Relevant job titles and roles (8 pts)
+       - Domain/industry experience (7 pts)
+    
+    3. CONTEXTUAL RELEVANCE (15 points):
+       - Project descriptions align with job requirements (8 pts)
+       - Quantifiable achievements related to JD needs (7 pts)
+    
+    4. SOFT SKILLS & COMPETENCIES (10 points):
+       - Leadership, teamwork, communication skills mentioned in JD (5 pts)
+       - Problem-solving and analytical abilities (5 pts)
+    
+    5. RESUME QUALITY (5 points):
+       - Clear structure and readability (3 pts)
+       - Professional formatting (2 pts)
+    
+    SCORING GUIDELINES:
+    - 90-100: Exceptional match, candidate exceeds requirements
+    - 75-89: Strong match, candidate meets most/all requirements
+    - 60-74: Good match, candidate meets core requirements with some gaps
+    - 40-59: Moderate match, significant gaps in key areas
+    - 0-39: Poor match, major misalignment
+    
+    MISSING KEYWORDS IDENTIFICATION:
+    - Prioritize HARD SKILLS and TECHNOLOGIES that are explicitly required in the JD
+    - Focus on must-have requirements, not nice-to-haves
+    - Use exact terminology from the JD (e.g., "React.js" not "React")
+    - Limit to 5 most critical gaps that would impact hiring decision
+    
+    Be strict and realistic in your scoring. A perfect 100 should be rare and only for candidates who clearly exceed all requirements.
+    `;
+
+    try {
+        const response = await fetch(OPENROUTER_API_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'HTTP-Referer': 'https://jobos.local',
+                'X-Title': 'Personal Job OS',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: MODEL,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: `JOB DESCRIPTION:\n${jobDescription}\n\nRESUME CONTENT:\n${resumeText}\n\nReturn the analysis in JSON format.` }
+                ],
+                temperature: 0.1,
+                response_format: { type: 'json_object' }
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`ATS Analysis Failed: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        let content = data.choices[0]?.message?.content;
+
+        if (!content) throw new Error("No content from AI");
+
+        // Sanitize: Find the first '{' and last '}' to extract valid JSON
+        const startIndex = content.indexOf('{');
+        const endIndex = content.lastIndexOf('}');
+
+        if (startIndex !== -1 && endIndex !== -1) {
+            content = content.substring(startIndex, endIndex + 1);
+        }
+
+        try {
+            const parsed = JSON.parse(content);
+            return {
+                score: Number(parsed.score) || 0,
+                feedback: parsed.feedback || "No feedback provided.",
+                missingKeywords: parsed.missingKeywords || []
+            } as ATSAnalysis;
+        } catch (e) {
+            console.error("ATS Parse Error. Content:", content);
+            return { score: 0, feedback: "Error parsing AI response.", missingKeywords: [] };
+        }
+
+    } catch (error: any) {
+        console.error("ATS Analysis Error:", error);
+        return { score: 0, feedback: `Analysis failed: ${error.message || 'Unknown error'}`, missingKeywords: [] };
     }
 }
