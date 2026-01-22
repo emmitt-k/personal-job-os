@@ -40,7 +40,7 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
     const [selectedProfileId, setSelectedProfileId] = useState<number | ''>('');
     const [refineInstructions, setRefineInstructions] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
-    const [draftId, setDraftId] = useState<number | null>(null);
+
     const [hasCopied, setHasCopied] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isEditingResume, setIsEditingResume] = useState(false);
@@ -54,62 +54,32 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
     const [isCalculatingScore, setIsCalculatingScore] = useState(false);
 
     // Load Draft on Mount
+    // Reset / Initialize Form State
     useEffect(() => {
-        const loadDraft = async () => {
-            if (isOpen && !initialData) {
-                // Only load draft for NEW jobs
-                const latestDraft = await db.jobDrafts.orderBy('updatedAt').last();
-                if (latestDraft) {
-                    setFormData(latestDraft.formData);
-                    // Load keywords if saved in draft (future proofing, though not in Job object yet)
-                    // For now, we don't persist keywords in Dexie Job object unless we change schema.
-                    // Let's assume ephemeral for now or we need to update Job type.
-                    setDraftId(latestDraft.id!);
-                    if (latestDraft.formData.profileId) {
-                        setSelectedProfileId(latestDraft.formData.profileId);
-                    }
-                    console.log("Restored draft:", latestDraft.id);
-                } else {
-                    // Initialize clean state if no draft
-                    setFormData({ ...EMPTY_JOB, dateApplied: new Date(), createdAt: new Date(), updatedAt: new Date() });
-                    if (profiles.length > 0) setSelectedProfileId(profiles[0].id!);
-                }
-            } else if (isOpen && initialData) {
+        if (isOpen) {
+            if (initialData) {
+                // Edit Mode
                 setFormData({ ...initialData });
                 if (initialData.profileId) setSelectedProfileId(initialData.profileId);
+                // If editing, we might want to extract keywords or keep previous ones if we stored them? 
+                // Currently keywords are not stored in Job, so they start empty or we could re-extract.
+                // For now, let's leave them empty or user can click extract.
+            } else {
+                // New Job Mode - Clean Slate
+                setFormData({ ...EMPTY_JOB, dateApplied: new Date(), createdAt: new Date(), updatedAt: new Date() });
+                if (profiles.length > 0) setSelectedProfileId(profiles[0].id!);
+
+                // Reset UI states
+                setKeywords([]);
+                setManualKeyword('');
+                setAtsAnalysis(null);
+                setActiveTab('draft');
+                setRefineInstructions('');
+                setTempResumeText('');
+                setIsEditingResume(false);
             }
-        };
-        loadDraft();
+        }
     }, [isOpen, initialData, profiles]);
-
-    // Autosave Draft
-    useEffect(() => {
-        if (!isOpen || initialData) return; // Don't autosave when editing existing jobs (handled by explicit save) or closed
-
-        const saveDraft = async () => {
-            // Avoid saving empty state immediately
-            if (!formData.company && !formData.role && !formData.description) return;
-
-            try {
-                const draftData = {
-                    formData: { ...formData, profileId: selectedProfileId ? Number(selectedProfileId) : undefined },
-                    updatedAt: new Date()
-                };
-
-                if (draftId) {
-                    await db.jobDrafts.update(draftId, draftData);
-                } else {
-                    const newId = await db.jobDrafts.add(draftData);
-                    setDraftId(newId as number);
-                }
-            } catch (err) {
-                console.error("Failed to autosave draft", err);
-            }
-        };
-
-        const timeout = setTimeout(saveDraft, 1000); // Debounce 1s
-        return () => clearTimeout(timeout);
-    }, [formData, selectedProfileId, isOpen, initialData, draftId]);
 
     if (!isOpen) return null;
 
@@ -188,12 +158,6 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
             return;
         }
         await onSave(formData);
-
-        // Clear draft after successful save
-        if (draftId) {
-            await db.jobDrafts.delete(draftId);
-            setDraftId(null);
-        }
     };
 
     const handleCopyText = async () => {
@@ -257,7 +221,8 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
             filename: filename,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'legacy'] }
         };
 
         try {
@@ -365,34 +330,36 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
                                     </span>
                                 )}
                             </div>
-                            <div className="relative flex items-center justify-center w-14 h-10">
-                                <svg viewBox="0 0 100 55" className="w-full h-full">
-                                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#f4f4f5" strokeWidth="12" strokeLinecap="round" />
-                                    {/* Dynamic Colored Segment */}
-                                    <path
-                                        d="M 10 50 A 40 40 0 0 1 90 50"
-                                        fill="none"
-                                        stroke={
-                                            !atsAnalysis ? '#f4f4f5' :
-                                                atsAnalysis.score >= 75 ? '#22c55e' :
-                                                    atsAnalysis.score >= 50 ? '#eab308' : '#ef4444'
-                                        }
-                                        strokeWidth="12"
-                                        strokeLinecap="round"
-                                        strokeDasharray="126" // approx length of semi-circle arc
-                                        strokeDashoffset={126 - (126 * ((atsAnalysis?.score || 0) / 100))}
-                                        className="transition-all duration-1000 ease-out"
-                                    />
-
-                                    {/* Needle */}
-                                    <g className="transition-transform duration-1000 ease-out origin-[50px_50px]" style={{ transform: `rotate(${((atsAnalysis?.score || 0) / 100 * 180) - 90}deg)` }}>
-                                        <line x1="50" y1="50" x2="50" y2="15" stroke="#18181b" strokeWidth="3" strokeLinecap="round" />
-                                    </g>
-                                    <circle cx="50" cy="50" r="4" fill="#18181b" />
-                                </svg>
-                                <span className="absolute bottom-[-2px] text-[11px] font-black text-zinc-900">
+                            <div className="flex flex-col items-center justify-center w-14">
+                                <span className="text-[11px] font-black text-zinc-900 mb-[-2px]">
                                     {isCalculatingScore ? '...' : (atsAnalysis?.score || 0)}%
                                 </span>
+                                <div className="w-14 h-8">
+                                    <svg viewBox="0 0 100 55" className="w-full h-full">
+                                        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#f4f4f5" strokeWidth="12" strokeLinecap="round" />
+                                        {/* Dynamic Colored Segment */}
+                                        <path
+                                            d="M 10 50 A 40 40 0 0 1 90 50"
+                                            fill="none"
+                                            stroke={
+                                                !atsAnalysis ? '#f4f4f5' :
+                                                    atsAnalysis.score >= 75 ? '#22c55e' :
+                                                        atsAnalysis.score >= 50 ? '#eab308' : '#ef4444'
+                                            }
+                                            strokeWidth="12"
+                                            strokeLinecap="round"
+                                            strokeDasharray="126" // approx length of semi-circle arc
+                                            strokeDashoffset={126 - (126 * ((atsAnalysis?.score || 0) / 100))}
+                                            className="transition-all duration-1000 ease-out"
+                                        />
+
+                                        {/* Needle */}
+                                        <g className="transition-transform duration-1000 ease-out origin-[50px_50px]" style={{ transform: `rotate(${((atsAnalysis?.score || 0) / 100 * 180) - 90}deg)` }}>
+                                            <line x1="50" y1="50" x2="50" y2="15" stroke="#18181b" strokeWidth="3" strokeLinecap="round" />
+                                        </g>
+                                        <circle cx="50" cy="50" r="4" fill="#18181b" />
+                                    </svg>
+                                </div>
                             </div>
                             {/* Recalculate Button */}
                             <button
@@ -674,7 +641,7 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
                             {/* Resume Preview Paper */}
                             <div className="space-y-6 flex justify-center bg-gray-100/50 p-4 rounded-lg overflow-y-auto max-h-[800px]">
                                 <div className="bg-white border text-xs border-zinc-200 shadow-md transform scale-100 origin-top text-zinc-900 font-sans relative" style={{ width: '210mm', minHeight: '297mm' }}>
-                                    <div id="resume-preview-content" className="bg-white p-[10mm]">
+                                    <div id="resume-preview-content" className="bg-white p-6">
                                         {/* Page Marker (Visual Only) */}
                                         <div className="absolute top-2 right-2 bg-gray-100 text-gray-400 text-[10px] px-2 py-0.5 rounded font-sans uppercase tracking-widest print:hidden border border-gray-200" data-html2canvas-ignore="true">
                                             {isEditingResume ? 'Editing...' : 'Preview'}
@@ -726,7 +693,7 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
                                                         );
 
                                                         return (
-                                                            <div className="text-center border-b border-zinc-200 pb-3 mb-5 font-sans">
+                                                            <div className="text-center mb-5 font-sans">
                                                                 <h1 className="text-3xl font-bold uppercase tracking-wide text-zinc-900 mb-2">
                                                                     {profile.name}
                                                                 </h1>
@@ -741,7 +708,17 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
                                                     <ReactMarkdown
                                                         components={{
                                                             h1: ({ children }: any) => <h2 className="font-bold border-b border-zinc-900 mb-3 pb-2 uppercase tracking-wider text-sm font-sans mt-6 text-left w-full block">{children}</h2>,
-                                                            h2: ({ children }: any) => <h2 className="font-bold border-b border-zinc-900 mb-3 pb-2 uppercase tracking-wider text-sm font-sans mt-6 text-left w-full block">{children}</h2>,
+                                                            h2: ({ children }: any) => {
+                                                                const text = String(children).toUpperCase();
+                                                                const isProjects = text.includes('PROJECTS');
+                                                                return (
+                                                                    <h2
+                                                                        className={`font-bold border-b border-zinc-900 mb-3 pb-2 uppercase tracking-wider text-sm font-sans text-left w-full block ${isProjects ? 'mt-48' : 'mt-6'}`}
+                                                                    >
+                                                                        {children}
+                                                                    </h2>
+                                                                );
+                                                            },
                                                             h3: ({ children }: any) => {
                                                                 const text = String(children);
                                                                 if (text.includes('|')) {

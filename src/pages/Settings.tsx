@@ -1,8 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db/client';
 import { type AppSettings, DEFAULT_SETTINGS } from '@/types/settings';
-import { Key, Moon, Sun, Monitor, Trash2, Download } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Key, Moon, Sun, Monitor, Trash2, Download, Upload } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 
 export function Settings() {
     const settings = useLiveQuery(() => db.settings.toCollection().first());
@@ -19,6 +19,7 @@ export function Settings() {
 
     const [apiKeyInput, setApiKeyInput] = useState<string>('');
     const [isEditingKey, setIsEditingKey] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Update settings helper
     const updateSettings = async (updates: Partial<AppSettings>) => {
@@ -27,6 +28,48 @@ export function Settings() {
             ...updates,
             updatedAt: new Date()
         });
+    };
+
+    // Import Data
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const json = e.target?.result as string;
+                const data = JSON.parse(json);
+
+                if (!data.jobs || !data.profiles || !data.settings) {
+                    alert('Invalid backup file format. Missing required data.');
+                    return;
+                }
+
+                if (confirm('This will replace ALL current data with the imported data. This cannot be undone. Are you sure?')) {
+                    await db.transaction('rw', db.jobs, db.profiles, db.settings, async () => {
+                        await db.jobs.clear();
+                        await db.profiles.clear();
+                        await db.settings.clear();
+
+                        if (data.jobs?.length) await db.jobs.bulkAdd(data.jobs);
+                        if (data.profiles?.length) await db.profiles.bulkAdd(data.profiles);
+                        if (data.settings?.length) await db.settings.bulkAdd(data.settings);
+                    });
+                    alert('Data imported successfully!');
+                }
+            } catch (error) {
+                console.error('Import failed:', error);
+                alert('Failed to import data: ' + (error instanceof Error ? error.message : 'Unknown error'));
+            }
+            // Reset input
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        };
+        reader.readAsText(file);
     };
 
     // Export Data
@@ -197,21 +240,37 @@ export function Settings() {
                         <div className="flex-1 space-y-4">
                             <div>
                                 <h2 className="text-base font-semibold text-foreground">Data Management</h2>
-                                <p className="text-sm text-muted-foreground mt-1">Export your data for backup or portability.</p>
+                                <p className="text-sm text-muted-foreground mt-1">Import or export your data for backup and portability.</p>
                             </div>
 
                             <div className="flex items-center justify-between pt-2">
                                 <div>
-                                    <p className="text-sm font-medium text-foreground">Export All Data</p>
-                                    <p className="text-xs text-muted-foreground">Download a JSON file containing all jobs and profiles.</p>
+                                    <p className="text-sm font-medium text-foreground">Backup & Restore</p>
+                                    <p className="text-xs text-muted-foreground">Import or export your jobs, profiles, and settings.</p>
                                 </div>
-                                <button
-                                    onClick={handleExport}
-                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 gap-2"
-                                >
-                                    <Download size={14} />
-                                    Export JSON
-                                </button>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleFileChange}
+                                        accept=".json"
+                                        className="hidden"
+                                    />
+                                    <button
+                                        onClick={handleImportClick}
+                                        className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 gap-2"
+                                    >
+                                        <Upload size={14} />
+                                        Import JSON
+                                    </button>
+                                    <button
+                                        onClick={handleExport}
+                                        className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 gap-2"
+                                    >
+                                        <Download size={14} />
+                                        Export JSON
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

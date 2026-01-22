@@ -276,11 +276,16 @@ export async function generateResumeDraft(profile: Profile, jobDetails: { compan
        
        *Note: If multiple roles at same company, repeat the Company Name line or structure clearly.*
     
-    5. **EDUCATION FORMAT**:
+    5. **PROJECTS FORMAT** (Strictly follow this structure):
+       ### Project Name
+       *   Bullet point describing the project, tech stack, or achievement...
+       *   Another bullet point...
+
+    6. **EDUCATION FORMAT**:
        ### Degree Name | Start Date - End Date
        **Institution Name**
     
-    6. **CONTENT RULES**:
+    7. **CONTENT RULES**:
        - **NO FLUFF**: Do not add "Additional Information", "References", or conversational outros like "Hope this helps".
        - **NO CODE BLOCKS**: Return raw markdown text.
        - **Tone**: Professional, action-oriented, quantifiable results.
@@ -379,11 +384,14 @@ export async function refineResume(currentResume: string, instructions: string):
        ### Role Title | Start Date - End Date
        **Company Name**
        *   Bullet point...
-    4. **EDUCATION FORMAT**:
+    4. **PROJECTS FORMAT**:
+       ### Project Name
+       *   Bullet point...
+    5. **EDUCATION FORMAT**:
        ### Degree Name | Start Date - End Date
        **Institution Name**
     
-    5. **NO FLUFF**: Do not add conversational text, "Here is the updated resume", or code blocks. Just the raw markdown.
+    6. **NO FLUFF**: Do not add conversational text, "Here is the updated resume", or code blocks. Just the raw markdown.
     
     **INSTRUCTIONS**: verify the user instructions below and apply them to the resume content.
     `;
