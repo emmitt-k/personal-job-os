@@ -3,6 +3,7 @@ import { Layout } from './components/Layout';
 import JobTracker from './pages/JobTracker';
 import { Profiles } from './pages/Profiles';
 import { Settings } from './pages/Settings';
+import { Contacts } from './pages/Contacts';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from './db/client';
 import { useEffect } from 'react';
@@ -44,6 +45,7 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<JobTracker />} />
+          <Route path="/contacts" element={<Contacts />} />
           <Route path="/profiles" element={<Profiles />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>

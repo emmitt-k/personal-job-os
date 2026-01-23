@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacts - Job OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .query-preview {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-zinc-950 antialiased font-sans h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-zinc-200 bg-zinc-50/50 flex flex-col">
+        <div class="h-14 flex items-center px-4 border-b border-zinc-200 bg-white">
+            <div class="flex items-center gap-2 font-semibold text-zinc-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="text-zinc-900">
+                    <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                    <rect width="20" height="14" x="2" y="6" rx="2" />
+                </svg>
+                Job OS
+            </div>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-1">
+            <a href="job_tracker.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <line x1="9" y1="21" x2="9" y2="9" />
+                </svg>
+                Job Tracker
+            </a>
+            <a href="contacts.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-zinc-900 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                Contacts
+            </a>
+            <a href="profile.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Profiles
+            </a>
+            <a href="settings.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                    <circle cx="12" cy="12" r="3" />
+                </svg>
+                Settings
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-zinc-200">
+            <div class="bg-blue-50 text-blue-800 text-xs p-3 rounded-md border border-blue-100">
+                <p class="font-medium mb-1">Local Mode</p>
+                <p class="opacity-80">Data stored in IndexedDB.</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col bg-white min-w-0">
+        <!-- Header -->
+        <header class="h-14 flex items-center justify-between px-6 border-b border-zinc-200 bg-white">
+            <h1 class="text-xl font-semibold text-zinc-900">Lead & Contact Finder</h1>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-auto p-6 bg-zinc-50/30 flex flex-col lg:flex-row gap-6 items-start">
+
+            <!-- Section: My Network (Main) -->
+            <section class="flex-1 min-w-0 space-y-4 w-full">
+                <div class="flex items-center justify-between gap-2 mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="p-2 bg-purple-100 text-purple-700 rounded-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-zinc-900">My Network</h2>
+                            <p class="text-sm text-zinc-500">Manage your professional relationships.</p>
+                        </div>
+                    </div>
+                    <button onclick="document.getElementById('add-contact-modal').classList.remove('hidden')"
+                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors bg-zinc-900 text-white hover:bg-zinc-800 h-9 px-4 shadow-sm gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="M12 5v14" />
+                        </svg>
+                        Add Contact
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-zinc-500 uppercase bg-zinc-50/50 border-b border-zinc-200">
+                            <tr>
+                                <th class="px-4 py-3 font-medium">Name</th>
+                                <th class="px-4 py-3 font-medium">Role</th>
+                                <th class="px-4 py-3 font-medium">Company</th>
+                                <th class="px-4 py-3 font-medium">Status</th>
+                                <th class="px-4 py-3 font-medium text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-200">
+                            <!-- Row 1 -->
+                            <tr class="hover:bg-zinc-50/50">
+                                <td class="px-4 py-3 font-medium text-zinc-900">
+                                    <div class="flex items-center gap-2">
+                                        <div
+                                            class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs">
+                                            JD</div>
+                                        John Doe
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-zinc-600">Technical Recruiter</td>
+                                <td class="px-4 py-3 text-zinc-600">Google</td>
+                                <td class="px-4 py-3">
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                        Replied
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-right">
+                                    <button class="text-zinc-400 hover:text-zinc-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 20h9" />
+                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- Row 2 -->
+                            <tr class="hover:bg-zinc-50/50">
+                                <td class="px-4 py-3 font-medium text-zinc-900">
+                                    <div class="flex items-center gap-2">
+                                        <div
+                                            class="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xs">
+                                            JS</div>
+                                        Jane Smith
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-zinc-600">Engineering Manager</td>
+                                <td class="px-4 py-3 text-zinc-600">Airbnb</td>
+                                <td class="px-4 py-3">
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        Contacted
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-right">
+                                    <button class="text-zinc-400 hover:text-zinc-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 20h9" />
+                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-zinc-50/50">
+                                <td class="px-4 py-8 text-center text-zinc-500 text-xs" colspan="5">
+                                    2 contacts found
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section: Lead Search (Side) -->
+            <section class="w-full lg:w-80 shrink-0 space-y-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="p-2 bg-blue-100 text-blue-700 rounded-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.3-4.3" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-zinc-900">Lead Search</h2>
+                        <p class="text-sm text-zinc-500">Google X-Ray Search</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg border border-zinc-200 shadow-sm p-4 space-y-4">
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-medium text-zinc-700">Role / Job Title</label>
+                            <input type="text" placeholder="e.g. Recruiter"
+                                class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-medium text-zinc-700">Company</label>
+                            <input type="text" placeholder="e.g. Google"
+                                class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-medium text-zinc-700">Location</label>
+                            <input type="text" placeholder="e.g. San Francisco"
+                                class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-medium text-zinc-700">Keywords (Optional)</label>
+                            <input type="text" placeholder="e.g. Tech, Hiring"
+                                class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950">
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <div class="bg-zinc-50 rounded-md border border-zinc-200 p-3">
+                            <label
+                                class="text-[10px] uppercase font-bold text-zinc-400 tracking-wider mb-2 block">Generated
+                                Query</label>
+                            <div class="flex flex-col gap-2">
+                                <code
+                                    class="text-sm text-zinc-800 break-all bg-white px-3 py-2 rounded border border-zinc-100 query-preview">site:linkedin.com/in/ "Recruiter" "Google" "SF"</code>
+                                <div class="flex gap-2">
+                                    <button
+                                        class="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 h-9 px-3 text-zinc-700">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        class="flex-[2] inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 h-9 px-4 shadow-sm gap-2">
+                                        Search
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                            <polyline points="15 3 21 3 21 9" />
+                                            <line x1="10" y1="14" x2="21" y2="3" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Add Contact Modal -->
+    <div id="add-contact-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden backdrop-blur-sm">
+        <div class="w-full max-w-md bg-white rounded-lg shadow-xl border border-zinc-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-zinc-200 flex items-center justify-between bg-zinc-50/50">
+                <h3 class="text-lg font-semibold text-zinc-900">Add New Contact</h3>
+                <button type="button" onclick="document.getElementById('add-contact-modal').classList.add('hidden')"
+                    class="text-zinc-500 hover:text-zinc-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 18 18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="space-y-1.5">
+                    <label class="text-sm font-medium text-zinc-700">Full Name</label>
+                    <input type="text"
+                        class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950"
+                        placeholder="e.g. Alex Johnson">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-medium text-zinc-700">Role</label>
+                        <input type="text"
+                            class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950"
+                            placeholder="e.g. Recruiter">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-medium text-zinc-700">Company</label>
+                        <input type="text"
+                            class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950"
+                            placeholder="e.g. OpenAI">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-medium text-zinc-700">Email</label>
+                        <input type="email"
+                            class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950"
+                            placeholder="e.g. alex@example.com">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-medium text-zinc-700">LinkedIn Profile</label>
+                        <input type="text"
+                            class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950"
+                            placeholder="e.g. linkedin.com/in/alex">
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-sm font-medium text-zinc-700">Relationship Strength</label>
+                    <select
+                        class="flex h-9 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950">
+                        <option>Weak (No contact yet)</option>
+                        <option>Moderate (Replied once)</option>
+                        <option>Strong (Known contact)</option>
+                    </select>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-sm font-medium text-zinc-700">Notes</label>
+                    <textarea
+                        class="flex min-h-[80px] w-full rounded-md border border-zinc-200 bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 resize-none"
+                        placeholder="Add background, meeting notes, etc..."></textarea>
+                </div>
+            </div>
+            <div class="flex items-center justify-end px-6 py-4 border-t border-zinc-200 bg-zinc-50/50 gap-3">
+                <button type="button" onclick="document.getElementById('add-contact-modal').classList.add('hidden')"
+                    class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-zinc-100 h-9 px-4 py-2">
+                    Cancel
+                </button>
+                <button type="button" onclick="document.getElementById('add-contact-modal').classList.add('hidden')"
+                    class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors bg-zinc-900 text-white hover:bg-zinc-800 h-9 px-4 py-2 shadow">
+                    Save Contact
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

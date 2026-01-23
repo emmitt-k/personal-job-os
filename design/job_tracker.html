@@ -35,6 +35,17 @@
                 </svg>
                 Job Tracker
             </a>
+            <a href="contacts.html"
+                class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                Contacts
+            </a>
             <a href="profile.html"
                 class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -541,291 +552,432 @@
                     </div>
                 </div>
 
-                <!-- Right: AI Resume -->
+                <!-- Right: Document Builder -->
                 <div class="bg-zinc-50/50 flex flex-col h-full overflow-hidden">
-                    <div class="px-4 py-3 border-b border-zinc-200 bg-white/50">
-                        <!-- Mode Selector (Tabs) -->
-                        <div class="flex p-1 bg-zinc-100 rounded-lg mb-4">
-                            <button type="button"
-                                onclick="document.getElementById('gen-mode-generate').classList.remove('hidden'); document.getElementById('gen-mode-refine').classList.add('hidden'); this.classList.add('bg-white', 'shadow-sm'); this.nextElementSibling.classList.remove('bg-white', 'shadow-sm')"
-                                class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all bg-white shadow-sm">
-                                New Draft
-                            </button>
-                            <button type="button"
-                                onclick="document.getElementById('gen-mode-generate').classList.add('hidden'); document.getElementById('gen-mode-refine').classList.remove('hidden'); this.classList.add('bg-white', 'shadow-sm'); this.previousElementSibling.classList.remove('bg-white', 'shadow-sm')"
-                                class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all">
-                                Refine AI
-                            </button>
-                        </div>
 
-                        <!-- Mode 1: Generate -->
-                        <div id="gen-mode-generate" class="space-y-4">
-                            <div class="flex items-center justify-between gap-4">
-                                <div class="flex-1 flex items-center gap-2">
-                                    <span class="text-xs font-medium text-zinc-500 whitespace-nowrap">Profile:</span>
-                                    <select
-                                        class="flex-1 h-8 rounded-md border border-zinc-200 bg-white text-sm px-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950">
-                                        <option>Full Stack V2</option>
-                                        <option>Design Lead</option>
-                                        <option>Product Manager</option>
-                                    </select>
-                                </div>
-                                <button type="button"
-                                    class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-8 px-3 text-xs shadow-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" class="mr-2">
-                                        <path d="M5 12h14" />
-                                        <path d="M12 5v14" />
-                                    </svg>
-                                    Generate Draft
-                                </button>
-                            </div>
-                        </div>
+                    <!-- Top Level Tabs -->
+                    <div class="flex items-center px-4 pt-4 gap-2 border-b border-zinc-200">
+                        <button
+                            onclick="document.getElementById('tab-resume').classList.remove('hidden'); document.getElementById('tab-cover-letter').classList.add('hidden'); this.classList.add('bg-zinc-50/50', 'text-zinc-900', 'border', 'border-zinc-200', 'border-b-transparent'); this.classList.remove('text-zinc-500'); this.nextElementSibling.classList.remove('bg-zinc-50/50', 'text-zinc-900', 'border', 'border-zinc-200', 'border-b-transparent'); this.nextElementSibling.classList.add('text-zinc-500')"
+                            class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative top-[1px] bg-zinc-50/50 text-zinc-900 border border-zinc-200 border-b-transparent">
+                            Create Resume
+                        </button>
+                        <button
+                            onclick="document.getElementById('tab-resume').classList.add('hidden'); document.getElementById('tab-cover-letter').classList.remove('hidden'); this.classList.add('bg-zinc-50/50', 'text-zinc-900', 'border', 'border-zinc-200', 'border-b-transparent'); this.classList.remove('text-zinc-500'); this.previousElementSibling.classList.remove('bg-zinc-50/50', 'text-zinc-900', 'border', 'border-zinc-200', 'border-b-transparent'); this.previousElementSibling.classList.add('text-zinc-500')"
+                            class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative top-[1px] text-zinc-500 hover:text-zinc-700">
+                            Create Cover Letter
+                        </button>
+                    </div>
 
-                        <!-- Mode 2: Refine (Hidden by default) -->
-                        <div id="gen-mode-refine" class="hidden space-y-3">
-                            <div class="flex flex-col gap-2">
-                                <label class="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Verbal
-                                    Instructions (AI)</label>
-                                <div class="flex gap-2">
-                                    <textarea
-                                        class="flex-1 min-h-[60px] rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs shadow-sm placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 resize-none"
-                                        placeholder="e.g. 'Make the summary more punchy', 'Highlight my Python experience more'"></textarea>
+                    <!-- Content Area -->
+                    <div class="flex-1 overflow-hidden relative">
+
+                        <!-- TAB: RESUME -->
+                        <div id="tab-resume" class="absolute inset-0 flex flex-col">
+                            <div class="px-4 py-3 border-b border-zinc-200 bg-white/50">
+                                <!-- Mode Selector (Tabs) -->
+                                <div class="flex p-1 bg-zinc-100 rounded-lg mb-4">
                                     <button type="button"
-                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 h-auto px-4 text-xs shadow-sm flex-col py-2 gap-1 uppercase tracking-tight">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                        onclick="document.getElementById('gen-mode-generate').classList.remove('hidden'); document.getElementById('gen-mode-refine').classList.add('hidden'); this.classList.add('bg-white', 'shadow-sm'); this.nextElementSibling.classList.remove('bg-white', 'shadow-sm')"
+                                        class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all bg-white shadow-sm">
+                                        New Draft
+                                    </button>
+                                    <button type="button"
+                                        onclick="document.getElementById('gen-mode-generate').classList.add('hidden'); document.getElementById('gen-mode-refine').classList.remove('hidden'); this.classList.add('bg-white', 'shadow-sm'); this.previousElementSibling.classList.remove('bg-white', 'shadow-sm')"
+                                        class="flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all">
+                                        Refine AI
+                                    </button>
+                                </div>
+
+                                <!-- Mode 1: Generate -->
+                                <div id="gen-mode-generate" class="space-y-4">
+                                    <div class="flex items-center justify-between gap-4">
+                                        <div class="flex-1 flex items-center gap-2">
+                                            <span
+                                                class="text-xs font-medium text-zinc-500 whitespace-nowrap">Profile:</span>
+                                            <select
+                                                class="flex-1 h-8 rounded-md border border-zinc-200 bg-white text-sm px-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950">
+                                                <option>Full Stack V2</option>
+                                                <option>Design Lead</option>
+                                                <option>Product Manager</option>
+                                            </select>
+                                        </div>
+                                        <button type="button"
+                                            class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-8 px-3 text-xs shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                                                <path d="M5 12h14" />
+                                                <path d="M12 5v14" />
+                                            </svg>
+                                            Generate Draft
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Mode 2: Refine (Hidden by default) -->
+                                <div id="gen-mode-refine" class="hidden space-y-3">
+                                    <div class="flex flex-col gap-2">
+                                        <label
+                                            class="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Verbal
+                                            Instructions (AI)</label>
+                                        <div class="flex gap-2">
+                                            <textarea
+                                                class="flex-1 min-h-[60px] rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs shadow-sm placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 resize-none"
+                                                placeholder="e.g. 'Make the summary more punchy', 'Highlight my Python experience more'"></textarea>
+                                            <button type="button"
+                                                class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 h-auto px-4 text-xs shadow-sm flex-col py-2 gap-1 uppercase tracking-tight">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path
+                                                        d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                                                    <path d="M5 3v4" />
+                                                    <path d="M19 17v4" />
+                                                    <path d="M3 5h4" />
+                                                    <path d="M17 19h4" />
+                                                </svg>
+                                                Refine
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex-1 p-6 overflow-y-auto">
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-sm font-semibold text-zinc-900">Preview</h4>
+                                        <div class="flex gap-2">
+                                            <button
+                                                class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path
+                                                        d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                                                </svg>
+                                                Edit Text</button>
+                                            <button
+                                                class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                                                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                                                </svg>
+                                                Copy Text</button>
+                                            <button
+                                                class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                                    <polyline points="7 10 12 15 17 10" />
+                                                    <line x1="12" y1="15" x2="12" y2="3" />
+                                                </svg>
+                                                Download PDF</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Resume Preview Paper(s) -->
+                                <div
+                                    class="space-y-6 flex justify-center bg-gray-100/50 p-4 rounded-lg overflow-y-auto max-h-[800px]">
+                                    <!-- Preview Paper -->
+                                    <div class="bg-white border text-xs border-zinc-200 shadow-md transform scale-100 origin-top text-zinc-900 font-serif relative"
+                                        style="width: 210mm; min-height: 297mm;">
+                                        <div class="bg-white p-[10mm]">
+                                            <div
+                                                class="absolute top-2 right-2 bg-gray-100 text-gray-400 text-[10px] px-2 py-0.5 rounded font-sans uppercase tracking-widest border border-gray-200">
+                                                Preview</div>
+                                            <div class="text-center border-b border-zinc-200 pb-4 mb-4">
+                                                <h1 class="text-lg font-bold uppercase tracking-wide">John Doe</h1>
+                                                <div
+                                                    class="flex flex-wrap justify-center gap-x-2 gap-y-1 text-zinc-500 mt-2 text-[10px] tracking-wide font-sans">
+                                                    <span>+1 (555) 123-4567</span>
+                                                    <span>◇</span>
+                                                    <a href="#"
+                                                        class="text-blue-600 hover:underline">john.doe@example.com</a>
+                                                    <span>◇</span>
+                                                    <a href="#" class="text-blue-600 hover:underline">LinkedIn</a>
+                                                    <span>◇</span>
+                                                    <a href="#" class="text-blue-600 hover:underline">GitHub</a>
+                                                    <span>◇</span>
+                                                    <a href="#" class="text-blue-600 hover:underline">Portfolio</a>
+                                                </div>
+                                                <div
+                                                    class="flex flex-wrap justify-center gap-x-2 gap-y-1 text-zinc-500 mt-1 text-[10px] tracking-wide font-sans">
+                                                    <span>San Francisco, CA</span>
+                                                    <span>◇</span>
+                                                    <span>Open to Hybrid</span>
+                                                    <span>◇</span>
+                                                    <span>Available in 2 Weeks Notice</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <h2
+                                                    class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
+                                                    Summary</h2>
+                                                <p>Senior Full Stack Engineer with 8+ years of experience building
+                                                    scalable web
+                                                    applications. Expert in React, Node.js, and Cloud Infrastructure.
+                                                    Proven
+                                                    track
+                                                    record of reducing load times by 40% and mentoring junior
+                                                    developers.</p>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <h2
+                                                    class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
+                                                    Experience</h2>
+                                                <div class="mb-3">
+                                                    <div class="flex justify-between items-baseline mb-1">
+                                                        <h3 class="font-bold">Senior Software Engineer</h3>
+                                                        <span class="text-zinc-500 italic">2021 - Present</span>
+                                                    </div>
+                                                    <div class="mb-1 italic text-zinc-600">TechCorp Inc.</div>
+                                                    <ul class="list-disc list-outside ml-4 space-y-1">
+                                                        <li>Architected and led the migration of a legacy monolith to a
+                                                            microservices
+                                                            architecture using Go and Kubernetes.</li>
+                                                        <li>Optimized database queries decreasing latency by 30% for
+                                                            high-traffic
+                                                            endpoints.</li>
+                                                        <li>Implemented automated CI/CD pipelines reducing deployment
+                                                            time from
+                                                            1
+                                                            hour
+                                                            to 10 minutes.</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <div class="flex justify-between items-baseline mb-1">
+                                                        <h3 class="font-bold">Software Engineer</h3>
+                                                        <span class="text-zinc-500 italic">2018 - 2021</span>
+                                                    </div>
+                                                    <div class="mb-1 italic text-zinc-600">StartupXY</div>
+                                                    <ul class="list-disc list-outside ml-4 space-y-1">
+                                                        <li>Developed user-facing features for a fintech dashboard using
+                                                            React
+                                                            and
+                                                            Redux.</li>
+                                                        <li>Collaborated with design team to implement a new design
+                                                            system,
+                                                            improving UI
+                                                            consistency.</li>
+                                                        <li>Spearheaded the integration of third-party payment gateways.
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <div class="flex justify-between items-baseline mb-1">
+                                                        <h3 class="font-bold">Junior Developer</h3>
+                                                        <span class="text-zinc-500 italic">2016 - 2018</span>
+                                                    </div>
+                                                    <div class="mb-1 italic text-zinc-600">WebWorks Agency</div>
+                                                    <ul class="list-disc list-outside ml-4 space-y-1">
+                                                        <li>Maintained and updated client websites built with WordPress
+                                                            and PHP.
+                                                        </li>
+                                                        <li>Implemented responsive designs ensuring mobile-first
+                                                            compatibility.
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Page 2 -->
+                                <div
+                                    class="bg-white border border-zinc-200 shadow-sm p-8 min-h-[750px] rounded-sm text-[11px] leading-relaxed text-zinc-800 font-serif relative">
+                                    <div
+                                        class="absolute -top-2 -right-2 bg-zinc-900 text-white text-[10px] px-2 py-0.5 rounded shadow-sm font-sans font-bold uppercase tracking-widest">
+                                        Page 2</div>
+                                    <div class="mb-6">
+                                        <h2
+                                            class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
+                                            Projects</h2>
+                                        <div class="mb-4">
+                                            <div class="flex justify-between items-baseline mb-1">
+                                                <h3 class="font-bold underline">Open Source UI Kit</h3>
+                                                <span class="text-zinc-500 italic">github.com/jdoe/ui-kit</span>
+                                            </div>
+                                            <p>Created a comprehensive React UI library with 50+ accessible components,
+                                                currently used by 500+ developers.</p>
+                                        </div>
+                                        <div class="mb-4">
+                                            <div class="flex justify-between items-baseline mb-1">
+                                                <h3 class="font-bold underline"> Job OS</h3>
+                                                <span class="text-zinc-500 italic">github.com/jdoe/job-os</span>
+                                            </div>
+                                            <p>Developed a local-first browser application to track job applications and
+                                                automate resume tailoring using AI.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-6">
+                                        <h2
+                                            class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
+                                            Education</h2>
+                                        <div class="mb-2">
+                                            <div class="flex justify-between items-baseline mb-0.5">
+                                                <h3 class="font-bold text-xs">Bachelor of Science in Computer Science
+                                                </h3>
+                                                <span class="text-zinc-500 italic text-[10px]">2012 - 2016</span>
+                                            </div>
+                                            <div class="text-zinc-600 italic">University of Technology</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-6">
+                                        <h2
+                                            class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
+                                            Skills</h2>
+                                        <p><span class="font-bold">Languages:</span> JavaScript (ES6+), TypeScript,
+                                            Python,
+                                            Go, SQL, HTML5, CSS3</p>
+                                        <p class="mt-1"><span class="font-bold">Frameworks/Libraries:</span> React,
+                                            Next.js,
+                                            Node.js, Express, Tailwind CSS, Shadcn UI</p>
+                                        <p class="mt-1"><span class="font-bold">Tools/Infrastructure:</span> Docker,
+                                            Kubernetes, AWS (S3, EC2, Lambda), Git, CI/CD, Terraform</p>
+                                    </div>
+
+                                    <div class="mb-6">
+                                        <h2
+                                            class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
+                                            Certifications</h2>
+                                        <p>• AWS Certified Solutions Architect – Associate (2023)</p>
+                                        <p>• Google Cloud Professional Cloud Architect (2022)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- End tab-resume -->
+
+                        <!-- TAB: COVER LETTER -->
+                        <div id="tab-cover-letter" class="absolute inset-0 flex flex-col hidden">
+                            <div class="px-4 py-3 border-b border-zinc-200 bg-white/50">
+                                <div class="flex items-center justify-between gap-4">
+                                    <div class="flex-1 flex items-center gap-2">
+                                        <span
+                                            class="text-xs font-medium text-zinc-500 whitespace-nowrap">Profile:</span>
+                                        <select
+                                            class="flex-1 h-8 rounded-md border border-zinc-200 bg-white text-sm px-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950">
+                                            <option>Full Stack V2</option>
+                                            <option>Design Lead</option>
+                                        </select>
+                                    </div>
+                                    <button type="button"
+                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-8 px-3 text-xs shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
+                                            stroke-linecap="round" stroke-linejoin="round" class="mr-2">
                                             <path
                                                 d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-                                            <path d="M5 3v4" />
-                                            <path d="M19 17v4" />
-                                            <path d="M3 5h4" />
-                                            <path d="M17 19h4" />
                                         </svg>
-                                        Refine
+                                        Generate
                                     </button>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="flex-1 p-6 overflow-y-auto">
-                        <div class="space-y-2 mb-4">
-                            <div class="flex items-center justify-between">
-                                <h4 class="text-sm font-semibold text-zinc-900">Preview</h4>
-                                <div class="flex gap-2">
-                                    <button
-                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path
-                                                d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-                                        </svg>
-                                        Edit Text</button>
-                                    <button
-                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                                        </svg>
-                                        Copy Text</button>
-                                    <button
-                                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                            <polyline points="7 10 12 15 17 10" />
-                                            <line x1="12" y1="15" x2="12" y2="3" />
-                                        </svg>
-                                        Download PDF</button>
+                            <div class="flex-1 p-6 overflow-y-auto">
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-sm font-semibold text-zinc-900">Preview</h4>
+                                        <div class="flex gap-2">
+                                            <button
+                                                class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path
+                                                        d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z" />
+                                                </svg>
+                                                Edit Text
+                                            </button>
+                                            <button
+                                                class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                                                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                                                </svg>
+                                                Copy Text
+                                            </button>
+                                            <button
+                                                class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                                    <polyline points="7 10 12 15 17 10" />
+                                                    <line x1="12" y1="15" x2="12" y2="3" />
+                                                </svg>
+                                                Download PDF
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Resume Preview Paper(s) -->
-                        <div
-                            class="space-y-6 flex justify-center bg-gray-100/50 p-4 rounded-lg overflow-y-auto max-h-[800px]">
-                            <!-- Preview Paper -->
-                            <div class="bg-white border text-xs border-zinc-200 shadow-md transform scale-100 origin-top text-zinc-900 font-serif relative"
-                                style="width: 210mm; min-height: 297mm;">
-                                <div class="bg-white p-[10mm]">
-                                    <div
-                                        class="absolute top-2 right-2 bg-gray-100 text-gray-400 text-[10px] px-2 py-0.5 rounded font-sans uppercase tracking-widest border border-gray-200">
-                                        Preview</div>
-                                    <div class="text-center border-b border-zinc-200 pb-4 mb-4">
-                                        <h1 class="text-lg font-bold uppercase tracking-wide">John Doe</h1>
-                                        <div
-                                            class="flex flex-wrap justify-center gap-x-2 gap-y-1 text-zinc-500 mt-2 text-[10px] tracking-wide font-sans">
-                                            <span>+1 (555) 123-4567</span>
-                                            <span>◇</span>
-                                            <a href="#" class="text-blue-600 hover:underline">john.doe@example.com</a>
-                                            <span>◇</span>
-                                            <a href="#" class="text-blue-600 hover:underline">LinkedIn</a>
-                                            <span>◇</span>
-                                            <a href="#" class="text-blue-600 hover:underline">GitHub</a>
-                                            <span>◇</span>
-                                            <a href="#" class="text-blue-600 hover:underline">Portfolio</a>
-                                        </div>
-                                        <div
-                                            class="flex flex-wrap justify-center gap-x-2 gap-y-1 text-zinc-500 mt-1 text-[10px] tracking-wide font-sans">
-                                            <span>San Francisco, CA</span>
-                                            <span>◇</span>
-                                            <span>Open to Hybrid</span>
-                                            <span>◇</span>
-                                            <span>Available in 2 Weeks Notice</span>
-                                        </div>
-                                    </div>
+                                <div
+                                    class="flex justify-center bg-gray-100/50 p-4 rounded-lg overflow-y-auto max-h-[800px]">
+                                    <div class="bg-white border text-sm border-zinc-200 shadow-md transform scale-100 origin-top text-zinc-900 font-serif relative"
+                                        style="width: 210mm; min-height: 297mm">
+                                        <div class="bg-white p-12 leading-relaxed h-full">
+                                            <div
+                                                class="prose prose-zinc max-w-none text-zinc-800 break-words whitespace-pre-line">
+                                                January 23, 2026
 
-                                    <div class="mb-4">
-                                        <h2
-                                            class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
-                                            Summary</h2>
-                                        <p>Senior Full Stack Engineer with 8+ years of experience building scalable web
-                                            applications. Expert in React, Node.js, and Cloud Infrastructure. Proven
-                                            track
-                                            record of reducing load times by 40% and mentoring junior developers.</p>
-                                    </div>
+                                                Dear Hiring Manager,
 
-                                    <div class="mb-4">
-                                        <h2
-                                            class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
-                                            Experience</h2>
-                                        <div class="mb-3">
-                                            <div class="flex justify-between items-baseline mb-1">
-                                                <h3 class="font-bold">Senior Software Engineer</h3>
-                                                <span class="text-zinc-500 italic">2021 - Present</span>
+                                                I am writing to express my strong interest in the Senior Frontend
+                                                Engineer role at Acme Corp. With over 6 years of experience building
+                                                performant web applications using React and TypeScript, I am confident
+                                                in my ability to contribute effectively to your engineering team.
+
+                                                In my previous role at TechCorp, I led the frontend migration of our
+                                                core product, resulting in a 40% improvement in load times and a
+                                                significant increase in user engagement. I am passionate about creating
+                                                intuitive user experiences and writing clean, maintainable code.
+
+                                                Thank you for considering my application. I look forward to the
+                                                possibility of discussing how my skills align with the needs of your
+                                                team.
+
+                                                Sincerely,
+
+                                                John Doe
+                                                john.doe@example.com
+                                                (555) 123-4567
                                             </div>
-                                            <div class="mb-1 italic text-zinc-600">TechCorp Inc.</div>
-                                            <ul class="list-disc list-outside ml-4 space-y-1">
-                                                <li>Architected and led the migration of a legacy monolith to a
-                                                    microservices
-                                                    architecture using Go and Kubernetes.</li>
-                                                <li>Optimized database queries decreasing latency by 30% for
-                                                    high-traffic
-                                                    endpoints.</li>
-                                                <li>Implemented automated CI/CD pipelines reducing deployment time from
-                                                    1
-                                                    hour
-                                                    to 10 minutes.</li>
-                                            </ul>
-                                        </div>
-                                        <div class="mb-3">
-                                            <div class="flex justify-between items-baseline mb-1">
-                                                <h3 class="font-bold">Software Engineer</h3>
-                                                <span class="text-zinc-500 italic">2018 - 2021</span>
-                                            </div>
-                                            <div class="mb-1 italic text-zinc-600">StartupXY</div>
-                                            <ul class="list-disc list-outside ml-4 space-y-1">
-                                                <li>Developed user-facing features for a fintech dashboard using React
-                                                    and
-                                                    Redux.</li>
-                                                <li>Collaborated with design team to implement a new design system,
-                                                    improving UI
-                                                    consistency.</li>
-                                                <li>Spearheaded the integration of third-party payment gateways.</li>
-                                            </ul>
-                                        </div>
-                                        <div class="mb-3">
-                                            <div class="flex justify-between items-baseline mb-1">
-                                                <h3 class="font-bold">Junior Developer</h3>
-                                                <span class="text-zinc-500 italic">2016 - 2018</span>
-                                            </div>
-                                            <div class="mb-1 italic text-zinc-600">WebWorks Agency</div>
-                                            <ul class="list-disc list-outside ml-4 space-y-1">
-                                                <li>Maintained and updated client websites built with WordPress and PHP.
-                                                </li>
-                                                <li>Implemented responsive designs ensuring mobile-first compatibility.
-                                                </li>
-                                            </ul>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Page 2 -->
-                        <div
-                            class="bg-white border border-zinc-200 shadow-sm p-8 min-h-[750px] rounded-sm text-[11px] leading-relaxed text-zinc-800 font-serif relative">
-                            <div
-                                class="absolute -top-2 -right-2 bg-zinc-900 text-white text-[10px] px-2 py-0.5 rounded shadow-sm font-sans font-bold uppercase tracking-widest">
-                                Page 2</div>
-                            <div class="mb-6">
-                                <h2 class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
-                                    Projects</h2>
-                                <div class="mb-4">
-                                    <div class="flex justify-between items-baseline mb-1">
-                                        <h3 class="font-bold underline">Open Source UI Kit</h3>
-                                        <span class="text-zinc-500 italic">github.com/jdoe/ui-kit</span>
-                                    </div>
-                                    <p>Created a comprehensive React UI library with 50+ accessible components,
-                                        currently used by 500+ developers.</p>
-                                </div>
-                                <div class="mb-4">
-                                    <div class="flex justify-between items-baseline mb-1">
-                                        <h3 class="font-bold underline"> Job OS</h3>
-                                        <span class="text-zinc-500 italic">github.com/jdoe/job-os</span>
-                                    </div>
-                                    <p>Developed a local-first browser application to track job applications and
-                                        automate resume tailoring using AI.</p>
-                                </div>
-                            </div>
+                        </div> <!-- End Content Area -->
+                    </div> <!-- End Right Column -->
+                </div>
 
-                            <div class="mb-6">
-                                <h2 class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
-                                    Education</h2>
-                                <div class="mb-2">
-                                    <div class="flex justify-between items-baseline mb-0.5">
-                                        <h3 class="font-bold text-xs">Bachelor of Science in Computer Science
-                                        </h3>
-                                        <span class="text-zinc-500 italic text-[10px]">2012 - 2016</span>
-                                    </div>
-                                    <div class="text-zinc-600 italic">University of Technology</div>
-                                </div>
-                            </div>
-
-                            <div class="mb-6">
-                                <h2 class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
-                                    Skills</h2>
-                                <p><span class="font-bold">Languages:</span> JavaScript (ES6+), TypeScript,
-                                    Python,
-                                    Go, SQL, HTML5, CSS3</p>
-                                <p class="mt-1"><span class="font-bold">Frameworks/Libraries:</span> React,
-                                    Next.js,
-                                    Node.js, Express, Tailwind CSS, Shadcn UI</p>
-                                <p class="mt-1"><span class="font-bold">Tools/Infrastructure:</span> Docker,
-                                    Kubernetes, AWS (S3, EC2, Lambda), Git, CI/CD, Terraform</p>
-                            </div>
-
-                            <div class="mb-6">
-                                <h2 class="font-bold border-b border-zinc-900 mb-2 uppercase tracking-wider text-xs">
-                                    Certifications</h2>
-                                <p>• AWS Certified Solutions Architect – Associate (2023)</p>
-                                <p>• Google Cloud Professional Cloud Architect (2022)</p>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Modal Footer -->
+                <div class="flex items-center justify-end px-6 py-4 border-t border-zinc-200 bg-zinc-50/50 gap-3">
+                    <!-- Fix: Added type='button' and standard classes -->
+                    <button type="button"
+                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-zinc-100 hover:text-zinc-900 h-9 px-4 py-2"
+                        onclick="document.getElementById('add-job-modal').classList.add('hidden')">Cancel</button>
+                    <button type="button"
+                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-9 px-4 py-2 shadow"
+                        onclick="document.getElementById('add-job-modal').classList.add('hidden')">Save
+                        Application</button>
                 </div>
             </div>
-
-            <!-- Modal Footer -->
-            <div class="flex items-center justify-end px-6 py-4 border-t border-zinc-200 bg-zinc-50/50 gap-3">
-                <!-- Fix: Added type='button' and standard classes -->
-                <button type="button"
-                    class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-zinc-100 hover:text-zinc-900 h-9 px-4 py-2"
-                    onclick="document.getElementById('add-job-modal').classList.add('hidden')">Cancel</button>
-                <button type="button"
-                    class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-9 px-4 py-2 shadow"
-                    onclick="document.getElementById('add-job-modal').classList.add('hidden')">Save
-                    Application</button>
-            </div>
         </div>
-    </div>
 
 </body>
 

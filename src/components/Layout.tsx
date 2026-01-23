@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, Contact2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LayoutProps {
@@ -11,6 +11,7 @@ export function Layout({ children }: LayoutProps) {
 
     const navItems = [
         { href: '/', label: 'Job Tracker', icon: LayoutDashboard },
+        { href: '/contacts', label: 'Contacts', icon: Contact2 },
         { href: '/profiles', label: 'Profiles', icon: Users },
         { href: '/settings', label: 'Settings', icon: Settings },
     ];
