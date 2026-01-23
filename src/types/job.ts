@@ -20,6 +20,7 @@ export interface Job {
     profileId?: number; // FK to Profile
     description?: string; // Full job description
     resumeSnapshot?: string; // The generated resume text
+    coverLetterSnapshot?: string; // The generated cover letter text
     notes?: string;
     createdAt: Date;
     updatedAt: Date;

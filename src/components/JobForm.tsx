@@ -3,15 +3,15 @@ import { type Job } from '@/types/job';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db/client';
 import { X } from 'lucide-react';
-import { generateResumeDraft, refineResume, extractKeywords, calculateATSScore, type ATSAnalysis } from '@/ai/openrouter';
+import { extractKeywords, calculateATSScore, type ATSAnalysis } from '@/ai/analysis';
 // @ts-ignore
 import html2pdf from 'html2pdf.js';
 
 import { ATSScoreGauge } from './job-form/ATSScoreGauge';
 import { JobDetailsForm } from './job-form/JobDetailsForm';
 import { KeywordManager } from './job-form/KeywordManager';
-import { ResumeGenerator } from './job-form/ResumeGenerator';
-import { ResumePreview } from './job-form/ResumePreview';
+import { ResumeBuilder } from './job-form/ResumeBuilder';
+import { CoverLetterBuilder } from './job-form/CoverLetterBuilder';
 
 interface JobFormProps {
     isOpen: boolean;
@@ -41,15 +41,9 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
     const [formData, setFormData] = useState<Job>(EMPTY_JOB);
 
     // AI / Resume State
-    const [activeTab, setActiveTab] = useState<'draft' | 'refine'>('draft');
-    const [selectedProfileId, setSelectedProfileId] = useState<number | ''>('');
-    const [refineInstructions, setRefineInstructions] = useState('');
-    const [isGenerating, setIsGenerating] = useState(false);
+    const [documentTab, setDocumentTab] = useState<'resume' | 'cover-letter'>('resume');
 
-    const [hasCopied, setHasCopied] = useState(false);
-    const [isDownloading, setIsDownloading] = useState(false);
-    const [isEditingResume, setIsEditingResume] = useState(false);
-    const [tempResumeText, setTempResumeText] = useState('');
+    // Keywords State (Needed for Resume Generation)
     const [keywords, setKeywords] = useState<string[]>([]);
     const [manualKeyword, setManualKeyword] = useState('');
     const [isExtracting, setIsExtracting] = useState(false);
@@ -65,20 +59,15 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
             if (initialData) {
                 // Edit Mode
                 setFormData({ ...initialData });
-                if (initialData.profileId) setSelectedProfileId(initialData.profileId);
             } else {
                 // New Job Mode - Clean Slate
                 setFormData({ ...EMPTY_JOB, dateApplied: new Date(), createdAt: new Date(), updatedAt: new Date() });
-                if (profiles.length > 0) setSelectedProfileId(profiles[0].id!);
 
                 // Reset UI states
                 setKeywords([]);
                 setManualKeyword('');
                 setAtsAnalysis(null);
-                setActiveTab('draft');
-                setRefineInstructions('');
-                setTempResumeText('');
-                setIsEditingResume(false);
+                setDocumentTab('resume');
             }
         }
     }, [isOpen, initialData, profiles]);
@@ -98,60 +87,21 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
         }
     };
 
-    const handleGenerate = async () => {
-        if (!selectedProfileId) {
-            alert("Please select a profile first.");
-            return;
-        }
-        if (!formData.description) {
-            alert("Please provide a job description.");
-            return;
-        }
-
-        setIsGenerating(true);
-        try {
-            const profile = profiles.find(p => p.id === Number(selectedProfileId));
-            if (!profile) throw new Error("Profile not found");
-
-            const generatedResume = await generateResumeDraft(profile, {
-                company: formData.company,
-                role: formData.role,
-                description: formData.description
-            }, keywords);
-
-            setFormData(prev => ({ ...prev, resumeSnapshot: generatedResume, profileId: Number(selectedProfileId) }));
-            setActiveTab('refine');
-
-            // Trigger ATS Score Calculation
-            handleCalculateScore(generatedResume);
-
-        } catch (error: any) {
-            console.error("Creation failed", error);
-            alert(error.message || "Failed to generate resume.");
-        } finally {
-            setIsGenerating(false);
-        }
+    const handleUpdateResume = (text: string, profileId?: number) => {
+        setFormData(prev => ({
+            ...prev,
+            resumeSnapshot: text,
+            ...(profileId ? { profileId } : {})
+        }));
+        // Trigger ATS Score Calculation
+        handleCalculateScore(text);
     };
 
-    const handleRefine = async () => {
-        if (!refineInstructions.trim() || !formData.resumeSnapshot) return;
-
-        setIsGenerating(true);
-        try {
-            const refined = await refineResume(formData.resumeSnapshot, refineInstructions);
-            setFormData(prev => ({
-                ...prev,
-                resumeSnapshot: refined
-            }));
-            setRefineInstructions('');
-            // Recalculate Score
-            handleCalculateScore(refined);
-        } catch (error: any) {
-            console.error("Refinement failed", error);
-            alert(error.message || "Failed to refine resume.");
-        } finally {
-            setIsGenerating(false);
-        }
+    const handleUpdateCoverLetter = (text: string) => {
+        setFormData(prev => ({
+            ...prev,
+            coverLetterSnapshot: text
+        }));
     };
 
     const handleSave = async () => {
@@ -162,96 +112,8 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
         await onSave(formData);
     };
 
-    const handleCopyText = async () => {
-        if (!formData.resumeSnapshot) return;
 
-        // Construct full text including header if profile selected
-        let fullText = formData.resumeSnapshot;
 
-        if (selectedProfileId) {
-            const profile = profiles.find(p => p.id === Number(selectedProfileId));
-            if (profile) {
-                const header = [
-                    profile.name.toUpperCase(),
-                    [
-                        profile.contactInfo?.phone,
-                        profile.contactInfo?.email,
-                        profile.contactInfo?.location,
-                        profile.hrData?.workPreference ? `Open to ${profile.hrData.workPreference}` : ''
-                    ].filter(Boolean).join(' ◇ '),
-                    [
-                        profile.contactInfo?.linkedin ? 'LinkedIn' : '',
-                        profile.contactInfo?.github ? 'GitHub' : '',
-                        profile.hrData?.noticePeriod ? `Available in ${profile.hrData.noticePeriod}` : ''
-                    ].filter(Boolean).join(' ◇ ')
-                ].filter(Boolean).join('\n');
-
-                fullText = `${header}\n\n${fullText}`;
-            }
-        }
-
-        try {
-            await navigator.clipboard.writeText(fullText);
-            setHasCopied(true);
-            setTimeout(() => setHasCopied(false), 2000);
-        } catch (err) {
-            console.error('Failed to copy text: ', err);
-        }
-    };
-
-    const handleDownloadPDF = async () => {
-        const element = document.getElementById('resume-preview-content');
-        if (!element) return;
-
-        setIsDownloading(true);
-
-        let filename = 'resume.pdf';
-        if (selectedProfileId) {
-            const profile = profiles.find(p => p.id === Number(selectedProfileId));
-            if (profile) {
-                // Determine filename: <profile_full_name>_resume.pdf
-                const safeName = profile.name.trim().replace(/\s+/g, '_');
-                filename = `${safeName}_resume.pdf`;
-            }
-        } else {
-            filename = `${formData.company || 'Resume'}_${formData.role || 'Job'}_resume.pdf`;
-        }
-
-        // Options for html2pdf
-        const options: any = {
-            margin: [5, 5, 5, 5],
-            filename: filename,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['css', 'legacy'] }
-        };
-
-        try {
-            await html2pdf().set(options).from(element).save();
-        } catch (error) {
-            console.error("PDF generation failed", error);
-        } finally {
-            setIsDownloading(false);
-        }
-    };
-
-    const handleEnterEditMode = () => {
-        setTempResumeText(formData.resumeSnapshot || '');
-        setIsEditingResume(true);
-    };
-
-    const handleSaveEdit = () => {
-        setFormData(prev => ({ ...prev, resumeSnapshot: tempResumeText }));
-        setIsEditingResume(false);
-        // Recalculate Score
-        handleCalculateScore(tempResumeText);
-    };
-
-    const handleCancelEdit = () => {
-        setTempResumeText('');
-        setIsEditingResume(false);
-    };
 
     const handleExtractKeywords = async () => {
         if (!formData.description) return;
@@ -345,36 +207,61 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
                         />
                     </div>
 
-                    {/* RIGHT: AI Resume */}
+                    {/* RIGHT: Document Builder (Resume / Cover Letter) */}
                     <div className="bg-zinc-50/50 flex flex-col h-full overflow-hidden">
-                        <ResumeGenerator
-                            activeTab={activeTab}
-                            setActiveTab={setActiveTab}
-                            profiles={profiles}
-                            selectedProfileId={selectedProfileId}
-                            setSelectedProfileId={setSelectedProfileId}
-                            isGenerating={isGenerating}
-                            onGenerate={handleGenerate}
-                            onRefine={handleRefine}
-                            refineInstructions={refineInstructions}
-                            setRefineInstructions={setRefineInstructions}
-                        />
 
-                        <ResumePreview
-                            isEditingResume={isEditingResume}
-                            tempResumeText={tempResumeText}
-                            setTempResumeText={setTempResumeText}
-                            resumeSnapshot={formData.resumeSnapshot || ''}
-                            handleCancelEdit={handleCancelEdit}
-                            handleSaveEdit={handleSaveEdit}
-                            handleEnterEditMode={handleEnterEditMode}
-                            handleCopyText={handleCopyText}
-                            handleDownloadPDF={handleDownloadPDF}
-                            hasCopied={hasCopied}
-                            isDownloading={isDownloading}
-                            selectedProfileId={selectedProfileId}
-                            profiles={profiles}
-                        />
+                        {/* Tab Bar */}
+                        <div className="flex items-center px-4 pt-4 gap-2 border-b border-zinc-200">
+                            <button
+                                onClick={() => setDocumentTab('resume')}
+                                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative top-[1px] ${documentTab === 'resume'
+                                    ? 'bg-zinc-50/50 text-zinc-900 border border-zinc-200 border-b-transparent'
+                                    : 'text-zinc-500 hover:text-zinc-700'
+                                    }`}
+                            >
+                                Create Resume
+                            </button>
+                            <button
+                                onClick={() => setDocumentTab('cover-letter')}
+                                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative top-[1px] ${documentTab === 'cover-letter'
+                                    ? 'bg-zinc-50/50 text-zinc-900 border border-zinc-200 border-b-transparent'
+                                    : 'text-zinc-500 hover:text-zinc-700'
+                                    }`}
+                            >
+                                Create Cover Letter
+                            </button>
+                        </div>
+
+                        {/* Content Area */}
+                        <div className="flex-1 overflow-hidden">
+                            {documentTab === 'resume' && (
+                                <ResumeBuilder
+                                    profiles={profiles}
+                                    jobDetails={{
+                                        company: formData.company || '',
+                                        role: formData.role || '',
+                                        description: formData.description || ''
+                                    }}
+                                    keywords={keywords}
+                                    resumeSnapshot={formData.resumeSnapshot || ''}
+                                    onUpdateResume={handleUpdateResume}
+                                    initialProfileId={formData.profileId || (profiles.length > 0 ? profiles[0].id : undefined)}
+                                />
+                            )}
+                            {documentTab === 'cover-letter' && (
+                                <CoverLetterBuilder
+                                    profiles={profiles}
+                                    jobDetails={{
+                                        company: formData.company || '',
+                                        role: formData.role || '',
+                                        description: formData.description || ''
+                                    }}
+                                    coverLetterSnapshot={formData.coverLetterSnapshot || ''}
+                                    onUpdateCoverLetter={handleUpdateCoverLetter}
+                                    initialProfileId={formData.profileId || (profiles.length > 0 ? profiles[0].id : undefined)}
+                                />
+                            )}
+                        </div>
                     </div>
                 </div>
 

@@ -5,7 +5,7 @@ import { type Profile } from '@/types/profile';
 import { ProfileCard } from '@/components/ProfileCard';
 import { ProfileForm } from '@/components/ProfileForm';
 import { ImportResumeModal } from '@/components/ImportResumeModal';
-import { parseResumeWithAI } from '@/ai/openrouter';
+import { parseResumeWithAI } from '@/ai/resume';
 import { Plus, Download } from 'lucide-react';
 
 export function Profiles() {

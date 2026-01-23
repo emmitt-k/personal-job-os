@@ -1,5 +1,5 @@
 import { RefreshCw } from 'lucide-react';
-import { type ATSAnalysis } from '@/ai/openrouter';
+import { type ATSAnalysis } from '@/ai/analysis';
 
 interface ATSScoreGaugeProps {
     atsAnalysis: ATSAnalysis | null;
