@@ -173,9 +173,22 @@ export default function JobTracker() {
                                     <td className="px-4 py-3 text-muted-foreground font-mono text-xs">
                                         {job.dateApplied ? format(new Date(job.dateApplied), 'yyyy-MM-dd') : '-'}
                                     </td>
-                                    <td className="px-4 py-3 text-muted-foreground text-xs">{job.source}</td>
+                                    <td className="px-4 py-3 text-muted-foreground text-xs max-w-[200px] break-all">
+                                        {job.source?.startsWith('http') ? (
+                                            <a
+                                                href={job.source}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center justify-center rounded-md text-xs font-bold border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 h-7 px-3 shadow-sm transition-colors"
+                                            >
+                                                Link
+                                            </a>
+                                        ) : (
+                                            job.source
+                                        )}
+                                    </td>
                                     <td className="px-4 py-3 text-right">
-                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex items-center justify-end gap-1">
                                             <button
                                                 onClick={() => handleEditJob(job)}
                                                 className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0"
