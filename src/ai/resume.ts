@@ -164,6 +164,7 @@ export async function generateResumeDraft(profile: Profile, jobDetails: { compan
        **Company Name**
        *   Bullet point starts here...
        *   Another bullet point...
+       *   (Must have at least 3 bullets per role)
        
        *Note: If multiple roles at same company, repeat the Company Name line or structure clearly.*
     

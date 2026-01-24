@@ -315,7 +315,7 @@ export function ResumeBuilder({
                 {/* Resume Paper */}
                 <div className="flex justify-center bg-gray-100/50 p-4 rounded-lg overflow-y-auto overflow-x-hidden max-h-[800px]">
                     <div className="bg-white border text-sm border-zinc-200 shadow-md transform scale-[0.55] sm:scale-[0.7] lg:scale-[0.6] xl:scale-[0.75] 2xl:scale-[0.85] origin-top text-zinc-900 font-sans relative transition-transform duration-200" style={{ width: '210mm', minHeight: '297mm' }}>
-                        <div id="resume-preview-content" className="bg-white p-6 h-full">
+                        <div id="resume-preview-content" className="bg-white p-6">
 
                             {/* Page Marker (Visual Only) */}
                             <div className="absolute top-2 right-2 bg-gray-100 text-gray-400 text-[10px] px-2 py-0.5 rounded font-sans uppercase tracking-widest print:hidden border border-gray-200" data-html2canvas-ignore="true">
