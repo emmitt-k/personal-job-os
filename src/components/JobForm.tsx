@@ -153,9 +153,9 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/20 backdrop-blur-sm p-4 sm:p-6 fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/20 backdrop-blur-sm p-0 fade-in duration-200">
             <div className="fixed inset-0" onClick={onClose}></div>
-            <div className="relative w-full max-w-7xl bg-white rounded-xl shadow-2xl border border-zinc-200 flex flex-col h-[90vh] max-h-[900px] overflow-hidden">
+            <div className="relative w-full h-full bg-white shadow-2xl flex flex-col overflow-hidden">
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 bg-white">
@@ -185,10 +185,10 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
                 </div>
 
                 {/* Body (2 Columns) */}
-                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-zinc-200 overflow-hidden">
+                <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-zinc-200 overflow-hidden">
 
                     {/* LEFT: Job Details */}
-                    <div className="p-6 overflow-y-auto space-y-6 bg-white">
+                    <div className="p-6 overflow-y-auto space-y-6 bg-white lg:col-span-5">
                         <JobDetailsForm
                             formData={formData}
                             setFormData={setFormData}
@@ -208,7 +208,7 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
                     </div>
 
                     {/* RIGHT: Document Builder (Resume / Cover Letter) */}
-                    <div className="bg-zinc-50/50 flex flex-col h-full overflow-hidden">
+                    <div className="bg-zinc-50/50 flex flex-col h-full overflow-hidden lg:col-span-7">
 
                         {/* Tab Bar */}
                         <div className="flex items-center px-4 pt-4 gap-2 border-b border-zinc-200">

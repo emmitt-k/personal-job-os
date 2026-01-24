@@ -148,6 +148,7 @@ export async function generateResumeDraft(profile: Profile, jobDetails: { compan
     **CRITICAL FORMATTING RULES (DO NOT DEVIATE):**
 
     1. **NO HEADER**: Start immediately with "## PROFESSIONAL SUMMARY". Do NOT output Name, Phone, Email, Links.
+       - **CONSTRAINT**: The Professional Summary MUST NOT exceed 400 characters.
     2. **SECTION HEADERS**: Use H2 (##) and UPPERCASE for:
        - ## PROFESSIONAL SUMMARY
        - ## SKILLS
