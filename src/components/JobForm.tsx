@@ -30,6 +30,7 @@ const EMPTY_JOB: Job = {
     description: '',
     resumeSnapshot: '',
     notes: '',
+    keywords: [],
     createdAt: new Date(),
     updatedAt: new Date(),
 };
@@ -59,6 +60,7 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
             if (initialData) {
                 // Edit Mode
                 setFormData({ ...initialData });
+                setKeywords(initialData.keywords || []);
             } else {
                 // New Job Mode - Clean Slate
                 setFormData({ ...EMPTY_JOB, dateApplied: new Date(), createdAt: new Date(), updatedAt: new Date() });
@@ -109,7 +111,10 @@ export function JobForm({ isOpen, onClose, onSave, initialData }: JobFormProps) 
             alert("Company and Role are required.");
             return;
         }
-        await onSave(formData);
+        await onSave({
+            ...formData,
+            keywords
+        });
     };
 
 

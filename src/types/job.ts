@@ -21,6 +21,7 @@ export interface Job {
     description?: string; // Full job description
     resumeSnapshot?: string; // The generated resume text
     coverLetterSnapshot?: string; // The generated cover letter text
+    keywords?: string[]; // Extracted or manual keywords
     notes?: string;
     createdAt: Date;
     updatedAt: Date;

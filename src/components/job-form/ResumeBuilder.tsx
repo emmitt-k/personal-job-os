@@ -143,6 +143,8 @@ export function ResumeBuilder({
         if (!element) return;
 
         setIsDownloading(true);
+        // Wait for render to update styles (hide page break markings)
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         let filename = 'resume.pdf';
         if (selectedProfileId) {
@@ -408,7 +410,7 @@ export function ResumeBuilder({
                                                 li: ({ children }: any) => <li className="pl-1">{children}</li>,
                                                 p: ({ children }: any) => <p className="mb-2 last:mb-0">{children}</p>,
                                                 hr: () => (
-                                                    <div className="html2pdf__page-break relative w-[calc(100%+3rem)] -ml-6 h-8 bg-zinc-100/50 my-8 border-y border-zinc-200 shadow-inner flex items-center justify-between px-4">
+                                                    <div className={`html2pdf__page-break relative w-[calc(100%+3rem)] -ml-6 h-8 my-8 flex items-center justify-between px-4 ${isDownloading ? 'opacity-0' : 'bg-zinc-100/50 border-y border-zinc-200 shadow-inner'}`}>
                                                         <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-sans">End of Page 1</span>
                                                         <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-sans">Page 2</span>
                                                     </div>
