@@ -1,251 +1,117 @@
-# Job OS (V1)
+# Job OS
 
-> **AI-first specification** — this document is written for an AI code generator. Follow it strictly. Do not add features not explicitly listed.
+> **A local-first, AI-powered job hunting assistant.**
+> Optimized for speed, privacy, and reducing cognitive load.
 
----
-
-## 1. Product Intent
-
-A **local-first  job hunting tool** that replaces Careerflow for **job tracking, profile management, and resume generation**.
-
-This is not a SaaS. No auth. No backend. No analytics. No collaboration.
-
-Primary goal: **reduce cognitive load during job hunting** with fast CRUD, clean tables, and predictable flows.
+Job OS is a personal tool designed to replace scattered spreadsheets and generic SaaS platforms for tracking your job search. It runs entirely in your browser, stores data locally on your device, and uses your own API keys for AI features.
 
 ---
 
-## 2. Core Screens (Based on Final UI Design)
+## 🏗️ Core Features
 
-### 2.1 Job Tracker (Table-First)
+### 1. Job Tracker Application
+*   **Spreadsheet-like Interface:** A dense, high-density table view for managing all your applications in one place.
+*   **Status Management:** Track applications through their lifecycle: Saved -> Applied -> Interview -> Offer -> Rejected -> Ghosted.
+*   **Rich Details:** Store company info, role titles, application dates, resume snapshots, and personal notes.
+*   **Instant Search & Filtering:** Quickly find past applications by company or status.
 
-**Purpose:** Track job applications in a dense, editable table.
+### 2. Profile & Persona Manager
+*   **Multiple Personas:** Maintain different "versions" of yourself for different roles (e.g., "Frontend Dev", "Fullstack Engineer", "Product Manager").
+*   **Reusable Blocks:** Store your experience, projects, education, and skills once, and mix-and-match them into profiles.
+*   **History Tracking:** Keep a master record of all your career achievements.
 
-**UI Characteristics:**
+### 3. AI Resume Builder
+*   **Context-Aware Generation:** Generates a tailored resume for *each specific job application* by combining your selected Profile with the Job Description.
+*   **Strict No-Hallucination Policy:** The AI rewrites and highlights your *actual* experience to match the job; it does not invent facts.
+*   **Instant PDF Export:** Download clean, ATS-friendly resumes immediately.
+*   **BYOK (Bring Your Own Key):** Uses OpenRouter (Claude, GPT-4, Llama 3) via your own API key. No monthly subscriptions.
 
-* Data table (no kanban, no drag & drop)
-* Spreadsheet-like interaction
-* Inline editing preferred
+### 4. Contacts & Network Manager (New!)
+*   **Network CRM:** Track professional relationships, recruiters, and hiring managers.
+*   **Lead Search (X-Ray):** Built-in tool to generate Google X-Ray search queries to find recruiters and leads on LinkedIn.
+*   **Status Tags:** Monitor relationship warmth (Contacted, Replied, Weak/Strong ties).
 
-**Fields per Job Row:**
-
-* Company Name
-* Role Title
-* Location (text)
-* Application Status (enum)
-
-  * Saved
-  * Applied
-  * Interview
-  * Offer
-  * Rejected
-  * Ghosted
-* Date Applied
-* Source (LinkedIn, referral, etc.)
-* Linked Profile Used (reference to Profile ID)
-* Resume Snapshot (generated text, stored per job)
-* Notes (free text)
-
-**Table Features:**
-
-* Sort by date / status / company
-* Filter by status
-* Quick search (company / role)
-* Row-level edit & delete
+### 5. Settings & Privacy
+*   **Local-First:** All data lives in your browser's IndexedDB. Nothing is sent to our servers (because we don't have any).
+*   **Data Export:** JSON export/import for backup and portability.
+*   **Theme Support:** Light and Dark mode.
 
 ---
 
-### 2.2 Profile Manager (Persona-Based)
+## 🛠️ Tech Stack
 
-**Purpose:** Maintain multiple resume personas for different role types.
+This project is built for **longevity and simplicity**. It has **no backend dependencies**.
 
-**Profiles are reusable templates**, not tied to a single job.
-
-**Profiles List View:**
-
-* Card grid layout
-* Each card shows:
-
-  * Profile Name
-  * Target Role
-  * Short intro preview (2 lines)
-  * Skill tags
-  * Last updated timestamp
-
-**Profile Entity Structure:**
-
-1. **Basic Info**
-
-   * Profile Name (internal)
-   * Target Role
-
-2. **Intro / Summary**
-
-   * Freeform paragraph text
-
-3. **Skills**
-
-   * Tag-based input
-   * Ordered list (priority matters)
-
-4. **Experience** (repeatable)
-
-   * Company
-   * Role Title
-   * Start Date
-   * End Date
-   * Description (paragraph)
-
-5. **Projects** (repeatable)
-
-   * Project Name
-   * Short description
-
-6. **Education** (repeatable)
-
-   * Degree / Program
-   * Institution
-   * Date range
-
-7. **Certifications** (repeatable)
-
-   * Name
-   * Issuer
-   * Year
-
-**UX Rules:**
-
-* Section-based editing
-* Inline list with edit/delete buttons
-* Modal-based add/edit for sub-items
-* No reordering UI in v1
+*   **Frontend:** [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+*   **Build Tool:** [Vite](https://vitejs.dev/)
+*   **Styling:** [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
+*   **Database:** [Dexie.js](https://dexie.org/) (Wrapper for IndexedDB)
+*   **AI Integration:** [OpenRouter API](https://openrouter.ai/) for model flexibility
+*   **Icons:** [Lucide React](https://lucide.dev/)
 
 ---
 
-### 2.3 Resume Builder (Job-Centric)
-
-**Purpose:** Generate a tailored resume **at the moment of adding a job**.
-
-This is **not a standalone resume editor**.
-
-**Flow:**
-
-1. User adds a new Job entry
-2. Paste Job Description (JD)
-3. Select an existing Profile
-4. Click `Generate Resume`
-5. AI produces a **single standardized resume text**
-6. User can:
-
-   * Edit text manually
-   * Ask AI to rewrite sections
-7. Final resume text is **saved with that Job record**
-
-**Constraints:**
-
-* One resume format only (plain structured text)
-* No layout customization
-* No multiple versions per job
-* No PDF/DOCX styling logic in v1
-
----
-
-## 3. AI Usage (OpenRouter)
-
-**Where AI is used:**
-
-* Resume generation from Profile + JD
-* Optional rewrite of selected text blocks
-
-**Where AI is NOT used:**
-
-* Job tracking
-* Profile CRUD
-
-**Prompt Rules:**
-
-* Deterministic, non-sycophantic tone
-* Resume must reflect real profile data
-* No fabrication of experience
-
----
-
-## 4. Tech Stack (Locked)
-
-**Frontend:**
-
-* React + TypeScript
-* Vite
-* Tailwind CSS
-* shadcn/ui components
-
-**State & Data:**
-
-* IndexedDB via Dexie
-* Local-only persistence
-
-**AI:**
-
-* OpenRouter API
-* BYOK (user pastes API key)
-
-**No Backend**
-
----
-
-## 5. Project Structure (Required)
+## 📂 Project Structure
 
 ```
 /src
-  /components
-    DataTable
-    ProfileCard
-    ResumeEditor
-    Modals
-
-  /pages
-    JobTracker.tsx
-    Profiles.tsx
-
-  /db
-    schema.ts
-    client.ts
-
-  /ai
-    openrouter.ts
-    resumePrompt.ts
-
-  /types
-    job.ts
-    profile.ts
-
-  /utils
-    date.ts
-    text.ts
-
-  App.tsx
-  main.tsx
+  /ai           # AI service integration (OpenRouter) and prompts
+  /assets       # Static assets (images, icons)
+  /components   # React components
+    /contacts   # Contact management specific components
+    /job-form   # Job application form components
+    /profile-form # Profile editing components
+    /ui         # Reusable UI components (shadcn)
+  /db           # Database client and schema definition (Dexie)
+  /lib          # Utility libraries
+  /pages        # Top-level page components (JobTracker, Profiles, Contacts)
+  /types        # TypeScript definitions
+  App.tsx       # Main app layout and routing
+  main.tsx      # Entry point
 ```
 
 ---
 
-## 6. Explicit Non-Goals (Do NOT Build)
+## 🚀 Getting Started
 
-* Authentication / accounts
-* Cloud sync
-* Kanban boards
-* Resume templates
-* Cover letter generator
-* Analytics or dashboards
-* Multi-language support
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/personal-job-os.git
+    cd personal-job-os
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Start the development server:**
+    ```bash
+    npm run dev
+    ```
+
+4.  **Open in Browser:**
+    Navigate to `http://localhost:5173`
+
+5.  **Configure AI (Optional):**
+    Go to **Settings**, paste your OpenRouter API Key, and select your preferred model (e.g., `anthropic/claude-3-haiku` is recommended for speed/cost).
 
 ---
 
-## 7. Notes for Humans (Optional Reading)
+## 🛡️ Privacy & Security
 
-This project exists to:
+*   **Zero Data Collection:** We do not collect *any* user data.
+*   **Local Storage:** Your database exists only in your browser storage. Clearing your browser cache *will* delete your data (use the Export feature to backup!).
+*   **API Keys:** Your OpenAI/OpenRouter key is stored in `localStorage` on your machine and sent directly to the API provider.
 
-* Save money
-* Reduce tool fatigue
-* Optimize solo job hunting
+---
 
-If it feels "boring" — that means it’s correct.
+## 🔮 Future Roadmap
+
+*   [ ] Resume PDF visual customizer
+*   [ ] Browser extension for one-click job saving
+*   [ ] Local LLM support (Ollama)
+
+---
+
+> "If it feels boring, it means it works."
