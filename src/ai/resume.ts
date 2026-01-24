@@ -169,6 +169,7 @@ export async function generateResumeDraft(profile: Profile, jobDetails: { compan
        *Note: If multiple roles at same company, repeat the Company Name line or structure clearly.*
     
     5. **PROJECTS FORMAT** (Strictly follow this structure):
+       - **PAGE BREAK**: Insert a horizontal rule (---) immediately BEFORE the line \`## PROJECTS\`.
        ### Project Name
        *   Bullet point describing the project, tech stack, or achievement...
        *   Another bullet point...
@@ -250,6 +251,7 @@ export async function refineResume(currentResume: string, instructions: string):
        **Company Name**
        *   Bullet point...
     4. **PROJECTS FORMAT**:
+       - **PAGE BREAK**: Insert a horizontal rule (---) immediately BEFORE the line \`## PROJECTS\`.
        ### Project Name
        *   Bullet point...
     5. **EDUCATION FORMAT**:

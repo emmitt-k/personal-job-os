@@ -385,12 +385,8 @@ export function ResumeBuilder({
                                             components={{
                                                 h1: ({ children }: any) => <h2 className="font-bold border-b border-zinc-900 mb-3 pb-2 uppercase tracking-wider text-base font-sans mt-6 text-left w-full block">{children}</h2>,
                                                 h2: ({ children }: any) => {
-                                                    const text = String(children).toUpperCase();
-                                                    const isProjects = text.includes('PROJECTS');
                                                     return (
-                                                        <h2
-                                                            className={`font-bold border-b border-zinc-900 mb-3 pb-2 uppercase tracking-wider text-base font-sans text-left w-full block ${isProjects ? 'mt-48' : 'mt-6'}`}
-                                                        >
+                                                        <h2 className="font-bold border-b border-zinc-900 mb-3 pb-2 uppercase tracking-wider text-base font-sans mt-6 text-left w-full block">
                                                             {children}
                                                         </h2>
                                                     );
@@ -411,7 +407,12 @@ export function ResumeBuilder({
                                                 ul: ({ children }: any) => <ul className="list-disc list-outside ml-4 space-y-1 mb-2">{children}</ul>,
                                                 li: ({ children }: any) => <li className="pl-1">{children}</li>,
                                                 p: ({ children }: any) => <p className="mb-2 last:mb-0">{children}</p>,
-                                                hr: () => <hr className="my-4 border-zinc-200" />,
+                                                hr: () => (
+                                                    <div className="html2pdf__page-break relative w-[calc(100%+3rem)] -ml-6 h-8 bg-zinc-100/50 my-8 border-y border-zinc-200 shadow-inner flex items-center justify-between px-4">
+                                                        <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-sans">End of Page 1</span>
+                                                        <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-sans">Page 2</span>
+                                                    </div>
+                                                ),
                                             }}
                                         >
                                             {resumeSnapshot}
