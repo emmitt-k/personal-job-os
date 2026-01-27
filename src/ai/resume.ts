@@ -135,6 +135,8 @@ export async function parseResumeWithAI(resumeText: string): Promise<Profile> {
 }
 
 export async function generateResumeDraft(profile: Profile, jobDetails: { company: string; role: string; description: string }, keywords: string[] = []): Promise<string> {
+    const hasProjects = profile.projects && profile.projects.length > 0;
+
     const systemPrompt = `
     You are an expert resume writer. Your goal is to tailor a candidate's profile to a specific job description using a STRICT, LOCKED-IN FORMAT.
 
@@ -153,7 +155,7 @@ export async function generateResumeDraft(profile: Profile, jobDetails: { compan
        - ## PROFESSIONAL SUMMARY
        - ## SKILLS
        - ## EXPERIENCE
-       - ## PROJECTS
+       ${hasProjects ? '- ## PROJECTS' : ''}
        - ## EDUCATION
     
     3. **SKILLS FORMAT**:
@@ -168,17 +170,17 @@ export async function generateResumeDraft(profile: Profile, jobDetails: { compan
        
        *Note: If multiple roles at same company, repeat the Company Name line or structure clearly.*
     
-    5. **PROJECTS FORMAT** (Strictly follow this structure):
+    ${hasProjects ? `5. **PROJECTS FORMAT** (Strictly follow this structure):
        - **PAGE BREAK**: Insert a horizontal rule (---) immediately BEFORE the line \`## PROJECTS\`.
        ### Project Name
        *   Bullet point describing the project, tech stack, or achievement...
-       *   Another bullet point...
+       *   Another bullet point...` : ''}
 
-    6. **EDUCATION FORMAT**:
+    ${hasProjects ? '6.' : '5.'} **EDUCATION FORMAT**:
        ### Degree Name | Start Date - End Date
        **Institution Name**
     
-    7. **CONTENT RULES**:
+    ${hasProjects ? '7.' : '6.'} **CONTENT RULES**:
        - **NO FLUFF**: Do not add "Additional Information", "References", or conversational outros like "Hope this helps".
        - **NO CODE BLOCKS**: Return raw markdown text.
        - **Tone**: Professional, action-oriented, quantifiable results.
@@ -186,7 +188,7 @@ export async function generateResumeDraft(profile: Profile, jobDetails: { compan
 
     const userPrompt = `
     PROFILE:
-    ${JSON.stringify(profile, null, 2)}
+    ${JSON.stringify({ ...profile, photo: undefined }, null, 2)}
     
     JOB DETAILS:
     Company: ${jobDetails.company}
@@ -239,6 +241,8 @@ export async function generateResumeDraft(profile: Profile, jobDetails: { compan
 }
 
 export async function refineResume(currentResume: string, instructions: string): Promise<string> {
+    const hasProjects = currentResume.includes('## PROJECTS');
+
     const systemPrompt = `
     You are an expert resume editor. You will refine an existing resume draft based on specific user instructions while maintaining a STRICT LOCKED-IN FORMAT.
     
@@ -250,15 +254,15 @@ export async function refineResume(currentResume: string, instructions: string):
        ### Role Title | Start Date - End Date
        **Company Name**
        *   Bullet point...
-    4. **PROJECTS FORMAT**:
+    ${hasProjects ? `4. **PROJECTS FORMAT**:
        - **PAGE BREAK**: Insert a horizontal rule (---) immediately BEFORE the line \`## PROJECTS\`.
        ### Project Name
-       *   Bullet point...
-    5. **EDUCATION FORMAT**:
+       *   Bullet point...` : ''}
+    ${hasProjects ? '5.' : '4.'} **EDUCATION FORMAT**:
        ### Degree Name | Start Date - End Date
        **Institution Name**
     
-    6. **NO FLUFF**: Do not add conversational text, "Here is the updated resume", or code blocks. Just the raw markdown.
+    ${hasProjects ? '6.' : '5.'} **NO FLUFF**: Do not add conversational text, "Here is the updated resume", or code blocks. Just the raw markdown.
     
     **INSTRUCTIONS**: verify the user instructions below and apply them to the resume content.
     `;

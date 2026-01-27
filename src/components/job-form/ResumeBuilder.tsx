@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Wand2, Copy, Download, X } from 'lucide-react';
+import { RefreshCw, Wand2, Copy, Download, X, Image as ImageIcon } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+// @ts-ignore
+import remarkGfm from 'remark-gfm';
+// @ts-ignore
+import remarkBreaks from 'remark-breaks';
+// @ts-ignore
+import rehypeRaw from 'rehype-raw';
 // @ts-ignore
 import html2pdf from 'html2pdf.js';
 
@@ -46,6 +52,7 @@ export function ResumeBuilder({
     const [tempResumeText, setTempResumeText] = useState('');
     const [hasCopied, setHasCopied] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [showPhoto, setShowPhoto] = useState(true);
 
     // Sync initial profile id if provided later
     useEffect(() => {
@@ -158,12 +165,12 @@ export function ResumeBuilder({
         }
 
         const options: any = {
-            margin: [5, 5, 5, 5],
+            margin: 0,
             filename: filename,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
+            image: { type: 'jpeg', quality: 1.0 },
+            html2canvas: { scale: 4, useCORS: true, logging: true }, // higher scale for high-res background images
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['css', 'legacy'] }
+            pagebreak: { mode: 'css' } // 'avoid-all' pushes too early; 'css' respects manual breaks better
         };
 
         try {
@@ -289,6 +296,13 @@ export function ResumeBuilder({
                             ) : (
                                 <>
                                     <button
+                                        onClick={() => setShowPhoto(!showPhoto)}
+                                        disabled={!resumeSnapshot}
+                                        className={`inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border h-7 px-2 text-xs gap-1 disabled:opacity-50 ${showPhoto ? 'bg-zinc-900 text-white border-zinc-900' : 'bg-white text-zinc-900 border-zinc-200 hover:bg-zinc-100'}`}
+                                    >
+                                        <ImageIcon size={12} /> {showPhoto ? 'Photo On' : 'Photo Off'}
+                                    </button>
+                                    <button
                                         onClick={handleEnterEditMode}
                                         disabled={!resumeSnapshot}
                                         className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-7 px-2 text-xs gap-1 disabled:opacity-50"
@@ -315,9 +329,9 @@ export function ResumeBuilder({
                 </div>
 
                 {/* Resume Paper */}
-                <div className="flex justify-center bg-gray-100/50 p-4 rounded-lg overflow-y-auto overflow-x-hidden max-h-[800px]">
+                <div className="flex justify-center bg-gray-100/50 p-8 rounded-lg overflow-y-auto overflow-x-hidden max-h-[800px]">
                     <div className="bg-white border text-sm border-zinc-200 shadow-md transform scale-[0.55] sm:scale-[0.7] lg:scale-[0.6] xl:scale-[0.75] 2xl:scale-[0.85] origin-top text-zinc-900 font-sans relative transition-transform duration-200" style={{ width: '210mm', minHeight: '297mm' }}>
-                        <div id="resume-preview-content" className="bg-white p-6">
+                        <div id="resume-preview-content" className="bg-white p-[10mm]">
 
                             {/* Page Marker (Visual Only) */}
                             <div className="absolute top-2 right-2 bg-gray-100 text-gray-400 text-[10px] px-2 py-0.5 rounded font-sans uppercase tracking-widest print:hidden border border-gray-200" data-html2canvas-ignore="true">
@@ -354,7 +368,7 @@ export function ResumeBuilder({
                                             if (profile.hrData?.noticePeriod) line2Items.push({ text: `Available in ${profile.hrData.noticePeriod}` });
 
                                             const renderItems = (items: any[]) => (
-                                                <p className="text-zinc-700 text-sm tracking-wide font-medium flex flex-wrap justify-center gap-x-2">
+                                                <p className={`text-zinc-700 text-sm tracking-wide font-medium flex flex-wrap gap-x-2 ${showPhoto && profile.photo ? 'justify-start' : 'justify-center'}`}>
                                                     {items.map((item, index) => (
                                                         <span key={index} className="flex items-center">
                                                             {item.href ? (
@@ -371,19 +385,37 @@ export function ResumeBuilder({
                                             );
 
                                             return (
-                                                <div className="text-center mb-5 font-sans">
-                                                    <h1 className="text-3xl font-bold uppercase tracking-wide text-zinc-900 mb-2">
-                                                        {profile.name}
-                                                    </h1>
-                                                    <div className="space-y-1.5 mt-5">
-                                                        {line1Items.length > 0 && renderItems(line1Items)}
-                                                        {line2Items.length > 0 && renderItems(line2Items)}
+                                                <div className={`mb-6 font-sans ${showPhoto && profile.photo ? 'flex items-center gap-6 text-left px-4' : 'text-center'}`}>
+                                                    {showPhoto && profile.photo && (
+                                                        <div className="shrink-0 w-28 h-28 rounded-full border-2 border-zinc-100 shadow-sm relative overflow-hidden bg-zinc-100 flex items-center justify-center">
+                                                            <img
+                                                                src={profile.photo}
+                                                                alt={profile.name}
+                                                                className="w-full h-auto max-w-none"
+                                                                style={{
+                                                                    objectFit: 'cover' // Helpful for preview, ignored by PDF export
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <div className="flex-1">
+                                                        <h1 className="text-3xl font-bold uppercase tracking-wide text-zinc-900 mb-3">
+                                                            {profile.name}
+                                                        </h1>
+                                                        <div className="space-y-1.5">
+                                                            {line1Items.length > 0 && renderItems(line1Items)}
+                                                            {line2Items.length > 0 && renderItems(line2Items)}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             );
                                         })()}
 
                                         <ReactMarkdown
+                                            // @ts-ignore
+                                            remarkPlugins={[remarkGfm, remarkBreaks]}
+                                            // @ts-ignore
+                                            rehypePlugins={[rehypeRaw]}
                                             components={{
                                                 h1: ({ children }: any) => <h2 className="font-bold border-b border-zinc-900 mb-3 pb-2 uppercase tracking-wider text-base font-sans mt-6 text-left w-full block">{children}</h2>,
                                                 h2: ({ children }: any) => {
@@ -409,16 +441,38 @@ export function ResumeBuilder({
                                                 ul: ({ children }: any) => <ul className="list-disc list-outside ml-4 space-y-1 mb-2">{children}</ul>,
                                                 li: ({ children }: any) => <li className="pl-1">{children}</li>,
                                                 p: ({ children }: any) => <p className="mb-2 last:mb-0">{children}</p>,
-                                                hr: () => (
-                                                    <div className={`html2pdf__page-break relative w-[calc(100%+3rem)] -ml-6 h-8 my-8 flex items-center justify-between px-4 ${isDownloading ? 'opacity-0' : 'bg-zinc-100/50 border-y border-zinc-200 shadow-inner'}`}>
-                                                        <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-sans">End of Page 1</span>
-                                                        <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-sans">Page 2</span>
-                                                    </div>
-                                                ),
+                                                br: () => <br />, // Revert to standard br for natural spacing
+                                                hr: () => {
+                                                    // This is the manual page break marker (---)
+                                                    if (!isDownloading) {
+                                                        return (
+                                                            <div className="html2pdf__page-break relative w-full h-8 my-8 flex items-center justify-between px-4 bg-zinc-100 border-y border-zinc-300">
+                                                                <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold font-sans">Manual Page Break</span>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return <div className="html2pdf__page-break" style={{ height: '30px', marginTop: '20px', marginBottom: '20px', clear: 'both', pageBreakAfter: 'always' }} />;
+                                                },
                                             }}
                                         >
-                                            {resumeSnapshot}
+                                            {/* Pre-process to create explicit placeholders for multiple newlines */}
+                                            {resumeSnapshot.replace(/\n\n\n+/g, (match) => {
+                                                // Replace 3+ newlines with explicit spacers
+                                                // e.g. 3 newlines -> 1 spacer, 4 -> 2 spacers
+                                                const count = match.length - 2;
+                                                return '\n' + '&nbsp;\n'.repeat(count);
+                                            })}
                                         </ReactMarkdown>
+
+                                        {/* Physical Page Guides (A4 Height Overlay) - Only visible in preview */}
+                                        {!isDownloading && !isEditingResume && (
+                                            <>
+                                                {/* Page 1 Bottom Guide */}
+                                                <div className="absolute left-0 w-full border-b-2 border-dashed border-red-300 pointer-events-none flex justify-end items-end px-2" style={{ top: '297mm', height: '1px' }}>
+                                                    <span className="text-[10px] text-red-500 font-medium bg-white/80 px-1 mb-0.5">End of Page 1 (Approx)</span>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center h-[600px] text-zinc-400 space-y-4">

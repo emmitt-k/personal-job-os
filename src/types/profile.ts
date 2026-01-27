@@ -59,4 +59,5 @@ export interface Profile {
     education: Education[];
     certifications: Certification[];
     updatedAt: Date;
+    photo?: string; // Base64 or URL
 }

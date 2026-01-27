@@ -34,9 +34,17 @@ export function ProfileCard({ profile, onEdit }: ProfileCardProps) {
             className="rounded-lg border border-border bg-card shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer group"
         >
             <div className="flex items-start justify-between mb-4">
-                <div className={cn("h-10 w-10 rounded-full flex items-center justify-center font-semibold text-lg", avatarClass)}>
-                    {initials}
-                </div>
+                {profile.photo ? (
+                    <img
+                        src={profile.photo}
+                        alt={profile.name}
+                        className="h-10 w-10 rounded-full object-cover border border-border"
+                    />
+                ) : (
+                    <div className={cn("h-10 w-10 rounded-full flex items-center justify-center font-semibold text-lg", avatarClass)}>
+                        {initials}
+                    </div>
+                )}
                 <button className="text-muted-foreground hover:text-foreground">
                     <MoreHorizontal size={16} />
                 </button>
