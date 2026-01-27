@@ -1,6 +1,8 @@
 import { type Profile } from '@/types/profile';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import Cropper from 'react-easy-crop';
+import getCroppedImg from '@/lib/canvasUtils';
 
 interface BasicInfoFormProps {
     formData: Profile;
@@ -22,24 +24,116 @@ export function BasicInfoForm({
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData(prev => ({ ...prev, photo: reader.result as string }));
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
     const removePhoto = () => {
         setFormData(prev => ({ ...prev, photo: undefined }));
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
+    // --- CROP STATE ---
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+    const [tempImgSrc, setTempImgSrc] = useState<string | null>(null);
+    const [isCropping, setIsCropping] = useState(false);
+
+    const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert("File is too large. Please select an image under 5MB.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                setTempImgSrc(reader.result as string);
+                setIsCropping(true);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSaveCrop = async () => {
+        if (!tempImgSrc || !croppedAreaPixels) return;
+        try {
+            const croppedImage = await getCroppedImg(tempImgSrc, croppedAreaPixels);
+            setFormData(prev => ({ ...prev, photo: croppedImage }));
+            handleCancelCrop();
+        } catch (e) {
+            console.error(e);
+            alert("Failed to crop image.");
+        }
+    };
+
+    const handleCancelCrop = () => {
+        setTempImgSrc(null);
+        setIsCropping(false);
+        setZoom(1);
+        setCrop({ x: 0, y: 0 });
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 relative">
+            {/* Cropper Modal Overlay */}
+            {isCropping && tempImgSrc && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden flex flex-col h-[500px]">
+                        <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-white z-10">
+                            <h3 className="font-semibold text-gray-800">Crop Profile Photo</h3>
+                            <button onClick={handleCancelCrop} className="text-gray-500 hover:text-gray-700"><X size={20} /></button>
+                        </div>
+
+                        <div className="relative flex-1 bg-zinc-900 w-full overflow-hidden">
+                            <Cropper
+                                image={tempImgSrc}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={1}
+                                onCropChange={setCrop}
+                                onCropComplete={onCropComplete}
+                                onZoomChange={setZoom}
+                                cropShape="round"
+                                showGrid={false}
+                            />
+                        </div>
+
+                        <div className="p-4 bg-white space-y-4">
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-gray-500">Zoom</span>
+                                <input
+                                    type="range"
+                                    value={zoom}
+                                    min={1}
+                                    max={3}
+                                    step={0.1}
+                                    aria-labelledby="Zoom"
+                                    onChange={(e) => setZoom(Number(e.target.value))}
+                                    className="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                />
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handleCancelCrop}
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 bg-white"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSaveCrop}
+                                    className="flex-1 px-4 py-2 bg-black text-white rounded-md text-sm font-medium hover:bg-zinc-800"
+                                >
+                                    Save Photo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Photo Upload */}
             <div className="flex items-center gap-6">
                 <div className="relative group shrink-0">
@@ -61,7 +155,7 @@ export function BasicInfoForm({
                 </div>
                 <div className="space-y-2">
                     <label className="text-sm font-medium">Profile Photo</label>
-                    <p className="text-xs text-muted-foreground">Recommended: Square JPG or PNG, max 1MB.</p>
+                    <p className="text-xs text-muted-foreground">Recommended: Square JPG or PNG, max 5MB.</p>
                     <div className="flex gap-2">
                         <input
                             type="file"
@@ -75,7 +169,7 @@ export function BasicInfoForm({
                             onClick={() => fileInputRef.current?.click()}
                             className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 text-xs gap-2"
                         >
-                            <Upload size={14} /> Upload Photo
+                            <Upload size={14} /> Upload & Crop
                         </button>
                     </div>
                 </div>

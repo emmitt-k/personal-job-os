@@ -1,19 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db/client';
 import { JobStatus, type Job } from '@/types/job';
-import { Search, ChevronDown, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Search, ChevronDown, Plus, Pencil, Trash2, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { JobForm } from '@/components/JobForm';
 
 export default function JobTracker() {
-    const jobs = useLiveQuery(() => db.jobs.toArray());
+    const jobs = useLiveQuery(() => db.jobs.reverse().toArray());
+    const profiles = useLiveQuery(() => db.profiles.toArray()); // Fetch Profiles for display
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<JobStatus | 'All'>('All');
 
     // Modal State
     const [isJobModalOpen, setIsJobModalOpen] = useState(false);
     const [editingJob, setEditingJob] = useState<Job | null>(null);
+
+    // Auto-detect Ghosted jobs (Applied > 14 days ago)
+    useEffect(() => {
+        if (!jobs) return;
+        const now = Date.now();
+        const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+
+        jobs.forEach(job => {
+            if (job.status === JobStatus.Applied && job.dateApplied) {
+                const appliedTime = new Date(job.dateApplied).getTime();
+                if (now - appliedTime > TWO_WEEKS_MS) {
+                    db.jobs.update(job.id!, { status: JobStatus.Ghosted });
+                }
+            }
+        });
+    }, [jobs]);
 
     // Filter logic
     const filteredJobs = jobs?.filter(job => {
@@ -123,7 +140,12 @@ export default function JobTracker() {
                     <table className="w-full text-sm text-left">
                         <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
                             <tr>
-                                <th className="px-4 py-3 font-medium cursor-pointer hover:text-foreground group/th">
+                                <th className="px-4 py-3 font-medium cursor-pointer hover:text-foreground group/th w-24">
+                                    <div className="flex items-center gap-1">
+                                        Profile
+                                    </div>
+                                </th>
+                                <th className="px-4 py-3 font-medium cursor-pointer hover:text-foreground group/th w-64">
                                     <div className="flex items-center gap-1">
                                         Company
                                     </div>
@@ -143,68 +165,85 @@ export default function JobTracker() {
                                         Applied
                                     </div>
                                 </th>
-                                <th className="px-4 py-3 font-medium">Source</th>
-                                <th className="px-4 py-3 font-medium text-right">Actions</th>
+                                <th className="px-4 py-3 font-medium w-20 text-center">Source</th>
+                                <th className="px-4 py-3 font-medium text-right w-24">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
                             {filteredJobs?.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground italic">
+                                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground italic">
                                         No jobs found. Start by adding one!
                                     </td>
                                 </tr>
                             )}
-                            {filteredJobs?.map((job) => (
-                                <tr key={job.id} className="hover:bg-muted/50 transition-colors group">
-                                    <td className="px-4 py-3 font-medium text-foreground">{job.company}</td>
-                                    <td className="px-4 py-3 text-muted-foreground">{job.role}</td>
-                                    <td className="px-4 py-3">
-                                        <select
-                                            value={job.status}
-                                            onChange={(e) => handleStatusChange(job.id!, e.target.value as JobStatus)}
-                                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border-none focus:ring-0 cursor-pointer appearance-none text-center min-w-[80px] ${getStatusColor(job.status)}`}
-                                        >
-                                            {Object.values(JobStatus).map(s => (
-                                                <option key={s} value={s}>{s.toUpperCase()}</option>
-                                            ))}
-                                        </select>
-                                    </td>
-                                    <td className="px-4 py-3 text-muted-foreground font-mono text-xs">
-                                        {job.dateApplied ? format(new Date(job.dateApplied), 'yyyy-MM-dd') : '-'}
-                                    </td>
-                                    <td className="px-4 py-3 text-muted-foreground text-xs max-w-[200px] break-all">
-                                        {job.source?.startsWith('http') ? (
-                                            <a
-                                                href={job.source}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center justify-center rounded-md text-xs font-bold border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 h-7 px-3 shadow-sm transition-colors"
+                            {filteredJobs?.map((job) => {
+                                const profile = profiles?.find(p => p.id === job.profileId);
+                                return (
+                                    <tr key={job.id} className="hover:bg-muted/50 transition-colors group">
+                                        <td className="px-4 py-3 text-xs font-medium text-zinc-600">
+                                            {profile ? (
+                                                <span
+                                                    title={profile.name}
+                                                    className="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-zinc-100 text-zinc-600 border border-zinc-200 uppercase tracking-wider"
+                                                >
+                                                    {profile.name.substring(0, 3).toUpperCase()}..
+                                                </span>
+                                            ) : (
+                                                <span className="text-muted-foreground/50 italic text-[10px]">-</span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3 font-medium text-foreground max-w-[16rem] truncate" title={job.company}>
+                                            {job.company}
+                                        </td>
+                                        <td className="px-4 py-3 text-muted-foreground">{job.role}</td>
+                                        <td className="px-4 py-3">
+                                            <select
+                                                value={job.status}
+                                                onChange={(e) => handleStatusChange(job.id!, e.target.value as JobStatus)}
+                                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border-none focus:ring-0 cursor-pointer appearance-none text-center min-w-[80px] ${getStatusColor(job.status)}`}
                                             >
-                                                Link
-                                            </a>
-                                        ) : (
-                                            job.source
-                                        )}
-                                    </td>
-                                    <td className="px-4 py-3 text-right">
-                                        <div className="flex items-center justify-end gap-1">
-                                            <button
-                                                onClick={() => handleEditJob(job)}
-                                                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0"
-                                            >
-                                                <Pencil size={14} className="text-muted-foreground" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(job.id!)}
-                                                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-red-50 hover:text-destructive h-8 w-8 p-0"
-                                            >
-                                                <Trash2 size={14} className="text-destructive opacity-70" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                                {Object.values(JobStatus).map(s => (
+                                                    <option key={s} value={s}>{s.toUpperCase()}</option>
+                                                ))}
+                                            </select>
+                                        </td>
+                                        <td className="px-4 py-3 text-muted-foreground font-mono text-xs">
+                                            {job.dateApplied ? format(new Date(job.dateApplied), 'yyyy-MM-dd') : '-'}
+                                        </td>
+                                        <td className="px-4 py-3 text-muted-foreground text-xs text-center">
+                                            {job.source?.startsWith('http') ? (
+                                                <a
+                                                    href={job.source}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center justify-center rounded-md text-zinc-400 hover:text-blue-600 hover:bg-blue-50 h-7 w-7 transition-colors"
+                                                >
+                                                    <ExternalLink size={14} />
+                                                </a>
+                                            ) : (
+                                                job.source && <span className="text-[10px] text-zinc-400 truncate max-w-[80px] block">{job.source}</span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3 text-right">
+                                            <div className="flex items-center justify-end gap-1">
+                                                <button
+                                                    onClick={() => handleEditJob(job)}
+                                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0"
+                                                >
+                                                    <Pencil size={14} className="text-muted-foreground" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(job.id!)}
+                                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-red-50 hover:text-destructive h-8 w-8 p-0"
+                                                >
+                                                    <Trash2 size={14} className="text-destructive opacity-70" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 </div>

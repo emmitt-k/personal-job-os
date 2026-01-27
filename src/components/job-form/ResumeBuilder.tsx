@@ -167,8 +167,8 @@ export function ResumeBuilder({
         const options: any = {
             margin: 0,
             filename: filename,
-            image: { type: 'jpeg', quality: 1.0 },
-            html2canvas: { scale: 4, useCORS: true, logging: true }, // higher scale for high-res background images
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false }, // lowered scale to reduce file size < 2MB
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: 'css' } // 'avoid-all' pushes too early; 'css' respects manual breaks better
         };
