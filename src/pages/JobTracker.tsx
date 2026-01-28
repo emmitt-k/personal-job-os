@@ -209,7 +209,7 @@ export default function JobTracker() {
                                             </select>
                                         </td>
                                         <td className="px-4 py-3 text-muted-foreground font-mono text-xs">
-                                            {job.dateApplied ? format(new Date(job.dateApplied), 'yyyy-MM-dd') : '-'}
+                                            {job.dateApplied ? format(new Date(job.dateApplied), 'dd MMM') : '-'}
                                         </td>
                                         <td className="px-4 py-3 text-muted-foreground text-xs text-center">
                                             {job.source?.startsWith('http') ? (
