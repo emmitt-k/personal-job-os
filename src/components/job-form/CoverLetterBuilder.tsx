@@ -48,12 +48,19 @@ export function CoverLetterBuilder({
         }
 
         setIsGenerating(true);
+        // Reset or clear if you want fresh text, but often keeping old text until new text starts is fine. 
+        // We'll reset here to show it's starting fresh.
+        onUpdateCoverLetter("");
+
         try {
             const profile = profiles.find(p => p.id === Number(selectedProfileId));
             if (!profile) throw new Error("Profile not found");
 
-            const letter = await generateCoverLetter(profile, jobDetails);
-            onUpdateCoverLetter(letter);
+            let accumulatedText = "";
+            await generateCoverLetter(profile, jobDetails, (chunk) => {
+                accumulatedText += chunk;
+                onUpdateCoverLetter(accumulatedText);
+            });
         } catch (error: any) {
             console.error("Cover Letter error", error);
             alert(error.message || "Failed to generate cover letter.");

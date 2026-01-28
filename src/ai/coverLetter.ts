@@ -1,9 +1,14 @@
+
 import { type Profile } from '@/types/profile';
-import { callOpenRouter } from '@/ai/client';
+import { callOpenRouter, streamOpenRouter } from '@/ai/client';
 
 const MODEL = 'openai/gpt-4o-mini';
 
-export async function generateCoverLetter(profile: Profile, jobDetails: { company: string; role: string; description: string }): Promise<string> {
+export async function generateCoverLetter(
+    profile: Profile,
+    jobDetails: { company: string; role: string; description: string },
+    onStream?: (chunk: string) => void
+): Promise<string> {
     const formattedDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     const systemPrompt = `
@@ -34,7 +39,7 @@ export async function generateCoverLetter(profile: Profile, jobDetails: { compan
 
     const userPrompt = `
     CANDIDATE PROFILE:
-    ${JSON.stringify(profile, null, 2)}
+    ${JSON.stringify({ ...profile, photo: undefined }, null, 2)}
     
     JOB DETAILS:
     Company: ${jobDetails.company}
@@ -43,17 +48,44 @@ export async function generateCoverLetter(profile: Profile, jobDetails: { compan
     ${jobDetails.description}
     `;
 
-    try {
-        const content = await callOpenRouter({
-            model: MODEL,
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userPrompt }
-            ],
-            temperature: 0.7
-        });
+    const messages: any[] = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+    ];
 
-        return content || "Failed to generate cover letter.";
+    try {
+        if (onStream) {
+            let fullContent = "";
+            try {
+                for await (const chunk of streamOpenRouter({
+                    model: MODEL,
+                    messages: messages,
+                    temperature: 0.7
+                })) {
+                    fullContent += chunk;
+                    onStream(chunk);
+                }
+                if (!fullContent) throw new Error("Stream returned empty content");
+                return fullContent;
+            } catch (streamError) {
+                console.warn("Available OpenRouter streaming failed, falling back to standard request:", streamError);
+                // Fallback to non-streaming
+                const content = await callOpenRouter({
+                    model: MODEL,
+                    messages: messages,
+                    temperature: 0.7
+                });
+                onStream(content); // Push all at once
+                return content || "Failed to generate cover letter.";
+            }
+        } else {
+            const content = await callOpenRouter({
+                model: MODEL,
+                messages: messages,
+                temperature: 0.7
+            });
+            return content || "Failed to generate cover letter.";
+        }
 
     } catch (error) {
         console.error("Cover Letter Gen Error:", error);
