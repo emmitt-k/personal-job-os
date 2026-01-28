@@ -36,7 +36,7 @@ export function BasicInfoForm({
     const [tempImgSrc, setTempImgSrc] = useState<string | null>(null);
     const [isCropping, setIsCropping] = useState(false);
 
-    const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
+    const onCropComplete = (_croppedArea: any, croppedAreaPixels: any) => {
         setCroppedAreaPixels(croppedAreaPixels);
     };
 
